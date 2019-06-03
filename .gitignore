@@ -1,0 +1,46 @@
+# See https://help.github.com/ignore-files/ for more about ignoring files.
+
+
+# Project specific stuff #
+##############################
+dist/
+logs/
+node_modules/
+client/src/components/**/*.css
+client/src/styles/variables.css
+lint-report.xml
+test-report.xml
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+users.json
+slingboard.json
+.sms
+
+# IntelliJ junk #
+#################
+.idea/
+
+# dependencies
+/node_modules
+
+# Logs and databases #
+######################
+*.log
+*.sql
+*.sqlite
+*.sqlite3
+*.db
+
+# OS generated files #
+######################
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+ehthumbs.db
+Thumbs.db
