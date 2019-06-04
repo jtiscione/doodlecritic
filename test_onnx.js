@@ -18,13 +18,17 @@ async function main() {
   const input = new Tensor(x, 'float32', [1, 1, 64, 64]);
 
   const outputMap = await session.run([input]);
-  const values = Array.from(outputMap.values())[0].data;
+  const rawValues = Array.from(outputMap.values())[0].data;
+  const exponents = rawValues.map(Math.exp);
+  const exponentSum = exponents.reduce((acc, e) => acc + e, 0);
+  const softmax = exponents.map(e => e / exponentSum);
+
   const valueByLabel = labels.reduce((acc, e, i) => {
-    acc[e] = values[i];
+    acc[e] = softmax[i];
     return acc;
   }, {});
 
-  const sortedLabels = labels.sort((e1, e2) => valueByLabel[e1] - valueByLabel[e2]);
+  const sortedLabels = labels.sort((e1, e2) => valueByLabel[e2] - valueByLabel[e1]);
 
   console.dir(sortedLabels);
 }
