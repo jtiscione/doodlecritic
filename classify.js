@@ -11,13 +11,15 @@ module.exports = async function (inputString) {
 
     session = new InferenceSession();
 
-    labels = fs.readFileSync('/home/jason/repo/convolutional/labels.txt', 'utf8')
+    labels = fs.readFileSync('./labels.txt', 'utf8')
       .split('\n')
       .filter(e => e); // trim empty string
 
-    await session.loadModel('/home/jason/repo/convolutional/cnn_model.onnx');
+    await session.loadModel('./cnn_model.onnx');
 
   }
+
+  console.log(inputString.split( /(.{64})/ ).filter(e => e).map(e => e + '\n').join(''));
 
   const inputArray = new Float32Array(inputString.split('').map(digit => (digit === '1' ? 1 : 0)));
 
