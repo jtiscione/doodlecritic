@@ -1,5 +1,12 @@
+html, body {
+  height: 100%;
+}
+
 .App {
   text-align: center;
+  background-image: linear-gradient(steelblue, gray);
+  height: 100%;
+  padding: 100px;
 }
 
 .App-logo {

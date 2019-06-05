@@ -1,10 +1,14 @@
 import React from 'react';
-import logo from './logo.svg';
+import DoodleCanvas from './DoodleCanvas';
+
+// import logo from './logo.svg';
+
 import './App.css';
 
 function App() {
   return (
     <div className="App">
+      {/*
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
         <a
@@ -16,6 +20,8 @@ function App() {
           Learn React
         </a>
       </header>
+      */}
+      <DoodleCanvas />
     </div>
   );
 }
