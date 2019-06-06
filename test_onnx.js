@@ -27,11 +27,10 @@ async function main() {
     return acc;
   }, {});
 
-  const sortedLabels = labels.sort((e1, e2) => valueByLabel[e2] - valueByLabel[e1]);
-
-  console.dir(sortedLabels);
+  labels.sort((e1, e2) => valueByLabel[e2] - valueByLabel[e1]);
+  return labels;
 }
 
 main()
-  .then(console.log)
+  .then(console.dir)
   .catch(console.error);

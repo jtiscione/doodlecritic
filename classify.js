@@ -1,5 +1,7 @@
 const fs = require('fs');
+
 const onnx = require('onnxjs-node');
+
 const { Tensor, InferenceSession } = onnx;
 
 let session = null;
@@ -19,8 +21,6 @@ module.exports = async function (inputString) {
 
   }
 
-  console.log(inputString.split( /(.{64})/ ).filter(e => e).map(e => e + '\n').join(''));
-
   const inputArray = new Float32Array(inputString.split('').map(digit => (digit === '1' ? 1 : 0)));
 
   const inputTensor = new Tensor(inputArray, 'float32', [1, 1, 64, 64]);
@@ -38,7 +38,7 @@ module.exports = async function (inputString) {
     acc[e] = softmax[i];
     return acc;
   }, {});
-  const sortedLabels = labels.sort((e1, e2) => valueByLabel[e2] - valueByLabel[e1]);
+  const sortedLabels = [...labels].sort((e1, e2) => valueByLabel[e2] - valueByLabel[e1]);
   // Return top ten
   return sortedLabels.slice(0, 10).map((label => ({ value: label, count: Math.round(1000 * valueByLabel[label]) })));
 };

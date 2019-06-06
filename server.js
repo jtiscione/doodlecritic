@@ -24,7 +24,6 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 
 app.post('/paint', async (req, res) => {
-  console.log('/paint');
   const { body } = req;
   const topmost = await classify(body.input);
   console.dir(topmost);
