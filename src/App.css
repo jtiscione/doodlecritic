@@ -4,7 +4,7 @@ html, body {
 
 .App {
   text-align: center;
-  background-image: linear-gradient(steelblue, gray);
+  background-color: #333333;
   height: 100%;
   padding: 100px;
 }

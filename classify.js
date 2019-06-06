@@ -39,6 +39,6 @@ module.exports = async function (inputString) {
     return acc;
   }, {});
   const sortedLabels = labels.sort((e1, e2) => valueByLabel[e2] - valueByLabel[e1]);
-  const topFive = sortedLabels.slice(0, 5).map((label => ({ value: label, count: Math.round(100 * valueByLabel[label]) })));
-  return topFive;
+  // Return top ten
+  return sortedLabels.slice(0, 10).map((label => ({ value: label, count: Math.round(1000 * valueByLabel[label]) })));
 };

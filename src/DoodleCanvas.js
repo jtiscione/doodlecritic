@@ -101,8 +101,8 @@ class DoodleCanvas extends Component {
     });
     if (response.status === 200) {
       const result = await response.json();
-      const topFive = result.top_five;
-      this.setState({ tagData: topFive });
+      const tags = result.tags;
+      this.setState({ tagData: tags });
     }
   }
 

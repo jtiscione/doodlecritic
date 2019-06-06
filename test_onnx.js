@@ -1,4 +1,3 @@
-const util = require('util');
 const fs = require('fs');
 
 const onnx = require('onnxjs-node');
@@ -8,11 +7,11 @@ async function main() {
 
   const session = new InferenceSession();
 
-  const labels = fs.readFileSync('/home/jason/repo/convolutional/labels.txt', 'utf8')
+  const labels = fs.readFileSync('./labels.txt', 'utf8')
     .split('\n')
     .filter(e => e); // trim empty string
 
-  await session.loadModel('/home/jason/repo/convolutional/cnn_model.onnx');
+  await session.loadModel('./cnn_model.onnx');
 
   const x = new Float32Array(1 * 1 * 64 * 64).fill(0);
   const input = new Tensor(x, 'float32', [1, 1, 64, 64]);
