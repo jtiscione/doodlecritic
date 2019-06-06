@@ -3,21 +3,11 @@
 
 # Project specific stuff #
 ##############################
+labels.txt
+cnn_model.onnx
 dist/
 logs/
 node_modules/
-client/src/components/**/*.css
-client/src/styles/variables.css
-lint-report.xml
-test-report.xml
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-users.json
-slingboard.json
-.sms
 
 # IntelliJ junk #
 #################
