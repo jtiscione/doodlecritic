@@ -12,39 +12,58 @@ const LABELS_FILE = 'labels.txt';
 
 const S3_BUCKET = 'https://onnx.s3-us-west-2.amazonaws.com';
 
+/*
+ * This object will load the ONNX module and provide the interface to it.
+ * First call init(), then make calls to classify().
+ */
 module.exports = {
 
   labels: null,
   session: null,
 
+  /*
+   * Initial setup
+   */
   async init() {
-    // Helper; downloads labels.txt and cnn_model.onnx files from S3 and write them to disk if we don't have them.
-    // (The onnxjs module proper wants to be given a URL, but onnxjs-node wants a filename.)
-    // Using onnx-node since local files are easier to work with than S3 for debugging.
-    checkFile = async (filename) => {
+
+    /*
+     * Helper: if a specified file is not here, download and save a copy from S3
+     */
+    const checkFile = async (filename) => {
       const present = await util.promisify(fs.exists)('./' + filename);
       if (!present) {
+        console.log(`Fetching ${S3_BUCKET} from S3...`);
         const response = await fetch(S3_BUCKET + '/' + filename, { method: 'GET' });
         const buffer = await response.buffer();
         await util.promisify(fs.writeFile)('./' + filename, buffer, 'binary');
         console.log(`Wrote file ./${filename}.`);
       } else {
-        console.log(`Found file ./${filename}.`)
+        console.log(`Found file ./${filename}.`);
       }
     };
 
+    // Download labels if necessary
     await checkFile(LABELS_FILE);
+
+    // Read labels.txt
+    this.labels = fs.readFileSync('./' + LABELS_FILE, 'utf8')
+      .split('\n').filter(e => e); // trim empty string
+
+    // Download ONNX if necessary
     await checkFile(ONNX_FILE);
 
-    this.labels = fs.readFileSync('./' + LABELS_FILE, 'utf8')
-      .split('\n')
-      .filter(e => e); // trim empty string
-
+    // Create an InferenceSession and load the ONNX model
     this.session = new InferenceSession();
     await this.session.loadModel('./' + ONNX_FILE);
   },
 
-  async classify(inputString) {
+  /*
+   * Classifier method:
+   * [Assume] inputString is 4096 bytes long and consists of zeroes and ones.
+   */
+  async classify(inputString, limit = 10) {
+
+    console.log(inputString.match(/.{1,64}/g).join('\n'));
 
     if (this.session === null) {
       this.session = new InferenceSession();
@@ -70,6 +89,8 @@ module.exports = {
     }, {});
     const sortedLabels = [...this.labels].sort((e1, e2) => valueByLabel[e2] - valueByLabel[e1]);
     // Return top ten
-    return sortedLabels.slice(0, 10).map((label => ({ value: label, count: Math.round(1000 * valueByLabel[label]) })));
-  }
+    const topmost = sortedLabels.slice(0, limit).map((label => ({ label, value: valueByLabel[label] })));
+    console.dir(topmost);
+    return topmost;
+  },
 };

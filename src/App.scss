@@ -3,10 +3,40 @@ html, body {
 }
 
 .App {
+
   text-align: center;
-  background-color: #333333;
+  background-color: #222222;
   height: 100%;
   padding: 100px;
+  color: white;
+
+  header {
+    border: 1px solid purple;
+    margin-bottom: 20px;
+    font-size: 20pt;
+  }
+
+  .DoodleCanvas {
+    border: 1px solid red;
+    display: flex;
+    justify-content: center;
+
+    .padding {
+      flex-grow: 1;
+    }
+
+    canvas {
+      border: 1px solid yellow;
+    }
+
+    .cloud-box {
+      width: 400px;
+      border: 1px solid purple;
+      height: 100px;
+      background-color: black;
+    }
+  }
+
 }
 
 .App-logo {

@@ -1,9 +1,9 @@
 import React from 'react';
-import DoodleCanvas from './DoodleCanvas';
+import QuickDraw from './QuickDraw';
 
 // import logo from './logo.svg';
 
-import './App.css';
+import './App.scss';
 
 function App() {
   return (
@@ -21,7 +21,8 @@ function App() {
         </a>
       </header>
       */}
-      <DoodleCanvas />
+      <header>Draw a hexagon.</header>
+      <QuickDraw />
     </div>
   );
 }
