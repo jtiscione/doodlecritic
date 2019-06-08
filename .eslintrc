@@ -2,6 +2,7 @@
   "extends": ["react-app", "eslint-config-airbnb"],
   "rules": {
     "react/jsx-filename-extension": [1, { "extensions": [".js", ".jsx"] }],
+    "react/destructuring-assignment": 0,
     "max-len": [1, 120, 2, {"ignoreComments": true}],
     "dot-notation": 0,
     "object-curly-newline": ["Error", {"multiline": true, "minProperties": 4}],

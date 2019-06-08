@@ -169,7 +169,7 @@ class QuickDraw extends Component {
   render() {
     const { networkOutputs = [] } = this.state;
     return (
-      <div className="DoodleCanvas">
+      <div className="QuickDraw">
         <div className="padding" />
         <canvas
           width={CANVAS_WIDTH}

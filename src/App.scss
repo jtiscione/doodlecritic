@@ -1,11 +1,15 @@
 html, body {
-  height: 100%;
+  background-color: gray;
+}
+
+div {
+  border: 1px dotted gray;
 }
 
 .App {
 
   text-align: center;
-  background-color: #222222;
+  background-image: linear-gradient(steelblue, gray);
   height: 100%;
   padding: 100px;
   color: white;
@@ -16,7 +20,7 @@ html, body {
     font-size: 20pt;
   }
 
-  .DoodleCanvas {
+  .QuickDraw {
     border: 1px solid red;
     display: flex;
     justify-content: center;
