@@ -1,12 +1,13 @@
 import React, { Component } from 'react';
 import throttle from 'lodash.throttle';
 
+import ReactSpeedometer from 'react-d3-speedometer';
 import { TagCloud } from 'react-tagcloud';
 
 import DoodleCanvas from './DoodleCanvas';
 
-const CANVAS_WIDTH = 384;
-const CANVAS_HEIGHT = 384;
+const CANVAS_WIDTH = 500;
+const CANVAS_HEIGHT = 500;
 const INPUT_WIDTH = 64;
 const INPUT_HEIGHT = 64;
 
@@ -14,11 +15,14 @@ class QuickDraw extends Component {
 
   constructor(props) {
     super(props);
-    this.sendPaintData = throttle(this.sendPaintData, 500, { leading: true, trailing: true}).bind(this);
+    this.sendPaintData = throttle(this.sendPaintData, 500, { leading: true, trailing: true }).bind(this);
     this.resetPaintData = this.resetPaintData.bind(this);
   }
 
-  state = { networkOutputs: [] };
+  state = {
+    valueByLabel: {},
+    tags: [],
+  };
 
   sendPaintData(mainCanvas) {
 
@@ -28,6 +32,8 @@ class QuickDraw extends Component {
     miniCanvas.height = INPUT_HEIGHT;
 
     const miniContext = miniCanvas.getContext('2d');
+    miniContext.fillStyle = DoodleCanvas.BACKGROUND_COLOR;
+    miniContext.fillRect(0, 0, INPUT_WIDTH, INPUT_HEIGHT);
 
     miniContext.drawImage(mainCanvas, 0, 0, mainCanvas.width, mainCanvas.height, 0, 0, INPUT_WIDTH, INPUT_HEIGHT);
 
@@ -36,7 +42,7 @@ class QuickDraw extends Component {
     for (let i = 0; i < imageData.data.length; i += 4) {
       const red = imageData.data[i];
       // The red/green/blue values are guaranteed to be 0 or 255 so just do this
-      if (red === 0) {
+      if (red === 255) {
         input += '0';
       } else {
         input += '1';
@@ -56,8 +62,7 @@ class QuickDraw extends Component {
       return null;
     }).then((result) => {
       if (result) {
-        const tags = result.tags;
-        this.setState({ networkOutputs: tags });
+        this.setState(result.output);
       }
     }).catch((e) => {
       console.log(e);
@@ -65,11 +70,14 @@ class QuickDraw extends Component {
   }
 
   resetPaintData() {
-    this.setState({ networkOutputs: [] });
+    this.setState({ valueByLabel: {}, tags: [] });
   }
 
   render() {
-    const { networkOutputs = [] } = this.state;
+    const { valueByLabel = {}, tags = [] } = this.state;
+    const detectorValue = Math.round(100 * valueByLabel['hexagon']) || 0;
+
+    console.log(detectorValue);
     return (
       <div className="QuickDraw">
         <div className="padding" />
@@ -84,7 +92,6 @@ class QuickDraw extends Component {
               const centerX = CANVAS_WIDTH / 2;
               const centerY = CANVAS_WIDTH / 2;
               const r = CANVAS_WIDTH / 2.5; // ~100
-              ctx.strokeStyle = 'white';
               for (let i = 0; i <= 6; i++) {
                 const angle = (2 * Math.PI) * (i / 6);
                 const x = Math.round(centerX + r * Math.cos(angle));
@@ -102,13 +109,26 @@ class QuickDraw extends Component {
             }
           }
         />
-        <div className="cloud-box">
-          <TagCloud
-            minSize={12}
-            maxSize={35}
-            tags={networkOutputs.map(e => ({ value: e.label, count: Math.round(1000 * e.value) }))}
-            className="simple-cloud"
-          />
+        <div className="rightSide">
+          <div className="cloud-box">
+            <TagCloud
+              minSize={12}
+              maxSize={35}
+              shuffle={false}
+              disableRandomColor
+              tags={tags}
+              className="simple-cloud"
+            />
+          </div>
+          <div className="gauge-box">
+            <ReactSpeedometer
+              textColor="white"
+              needleColor="white"
+              minValue={0}
+              maxValue={100}
+              value={detectorValue}
+            />
+          </div>
         </div>
         <div className="padding" />
       </div>

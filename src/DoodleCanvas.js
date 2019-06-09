@@ -3,6 +3,9 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
 const STROKE_WIDTH = 7;
+const STROKE_COLOR = 'black';
+
+const BACKGROUND_COLOR = 'white';
 
 class DoodleCanvas extends Component {
 
@@ -28,6 +31,9 @@ class DoodleCanvas extends Component {
       this.ctx.lineWidth = STROKE_WIDTH;
       this.ctx.strokeWidth = STROKE_WIDTH;
       this.ctx.filter = 'blur(1px)';
+      this.ctx.fillStyle = BACKGROUND_COLOR;
+      this.ctx.strokeStyle = STROKE_COLOR;
+      this.ctx.fillRect(0, 0, this.props.width, this.props.height);
     }
   }
 
@@ -43,21 +49,22 @@ class DoodleCanvas extends Component {
     const { offsetX, offsetY } = this.mousePosition(event);
     this.isPainting = true;
     this.prevPos = { offsetX, offsetY };
-    this.paint(this.prevPos, this.prevPos, 'white');
+    this.paint(this.prevPos, this.prevPos, STROKE_COLOR);
   }
 
   onMouseMove(event) {
     if (this.isPainting) {
       const { offsetX, offsetY } = this.mousePosition(event);
       const offsetData = { offsetX, offsetY };
-      this.paint(this.prevPos, offsetData, 'white');
+      this.paint(this.prevPos, offsetData, STROKE_COLOR);
     }
   }
 
   onMouseEnter(_event) {
     const canvas = this.canvasRef.current;
     const context = canvas.getContext('2d');
-    context.clearRect(0, 0, this.props.width, this.props.height);
+    context.fillStyle = BACKGROUND_COLOR;
+    context.fillRect(0, 0, this.props.width, this.props.height);
     this.props.resetPaintData();
   }
 
@@ -72,8 +79,8 @@ class DoodleCanvas extends Component {
     const { offsetX, offsetY } = currPos;
     const { offsetX: x, offsetY: y } = prevPos;
     // this.ctx.filter = 'blur(4px)';
-    this.ctx.beginPath();
     this.ctx.strokeStyle = strokeStyle;
+    this.ctx.beginPath();
     this.ctx.moveTo(x, y);
     this.ctx.lineTo(offsetX, offsetY);
     this.ctx.stroke();
@@ -96,7 +103,6 @@ class DoodleCanvas extends Component {
           width={this.props.width}
           height={this.props.height}
           ref={this.canvasRef}
-          style={{ background: 'black' }}
           onMouseDown={this.onMouseDown}
           onMouseLeave={this.onMouseUp}
           onMouseUp={this.onMouseUp}

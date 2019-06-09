@@ -7,6 +7,8 @@ const onnx = require('onnxjs-node');
 
 const { Tensor, InferenceSession } = onnx;
 
+const DEBUG = true;
+
 const ONNX_FILE = 'cnn_model.onnx';
 const LABELS_FILE = 'labels.txt';
 
@@ -63,7 +65,9 @@ module.exports = {
    */
   async classify(inputString, limit = 10) {
 
-    console.log(inputString.match(/.{1,64}/g).join('\n'));
+    if (DEBUG) {
+      console.log(inputString.match(/.{1,64}/g).join('\n'));
+    }
 
     if (this.session === null) {
       this.session = new InferenceSession();
@@ -87,10 +91,22 @@ module.exports = {
       acc[e] = softmax[i];
       return acc;
     }, {});
+
     const sortedLabels = [...this.labels].sort((e1, e2) => valueByLabel[e2] - valueByLabel[e1]);
     // Return top ten
-    const topmost = sortedLabels.slice(0, limit).map((label => ({ label, value: valueByLabel[label] })));
-    console.dir(topmost);
-    return topmost;
+    const tags = sortedLabels.slice(0, limit).map((label => ({ value: label, count: Math.round(1000 * valueByLabel[label]) })))
+
+    // Reassemble valueByLabel but sort the keys in descending value order
+    const sortedValueByLabel = sortedLabels.reduce((acc, label) => {
+      acc[label] = valueByLabel[label];
+      return acc;
+    }, {});
+
+    console.log(`Classifier result: ${sortedLabels[0]}`);
+    const returnValue = { valueByLabel: sortedValueByLabel, tags };
+    if (DEBUG) {
+      console.dir(returnValue);
+    }
+    return returnValue;
   },
 };

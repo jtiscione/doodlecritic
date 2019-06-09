@@ -25,17 +25,17 @@ app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 
 app.post('/paint', async (req, res) => {
   const { body } = req;
-  const topmost = await classifier.classify(body.input);
-  res.status(200).send({ tags: topmost });
+  const output = await classifier.classify(body.input);
+  res.status(200).send({ output });
 });
 
-if (haveBuildFolder){
+if (haveBuildFolder) {
   app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'build', 'index.html'));
   });
 } else {
   app.get('/', (req, res) => {
-    res.send(`Listening on port ${ process.env.PORT || 8000 }.`);
+    res.send(`Listening on port ${process.env.PORT || 8000}.`);
   });
 }
 

@@ -9,7 +9,7 @@ div {
 .App {
 
   text-align: center;
-  background-image: linear-gradient(steelblue, gray);
+  background-image: linear-gradient(steelblue, black);
   height: 100%;
   padding: 100px;
   color: white;
@@ -30,15 +30,30 @@ div {
     }
 
     canvas {
-      border: 1px solid yellow;
+      box-shadow: 1px 1px 10px;
     }
 
-    .cloud-box {
-      width: 400px;
-      border: 1px solid purple;
-      height: 100px;
-      background-color: black;
+    .rightSide {
+
+      margin: auto;
+      display: flex;
+      flex-direction: column;
+
+      .cloud-box {
+        align-self: center;
+        border: 1px solid purple;
+        width: 500px;
+        height: 100px;
+      }
+
+      .gauge-box {
+        align-self: center;
+        border: 1px solid orange;
+        width: 320px;
+        height: 200px;
+      }
     }
+
   }
 
 }
