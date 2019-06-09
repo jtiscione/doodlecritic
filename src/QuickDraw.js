@@ -75,7 +75,7 @@ class QuickDraw extends Component {
 
   render() {
     const { valueByLabel = {}, tags = [] } = this.state;
-    const detectorValue = Math.round(100 * valueByLabel['hexagon']) || 0;
+    const detectorValue = valueByLabel['hexagon'] || 0;
 
     console.log(detectorValue);
     return (
@@ -124,11 +124,17 @@ class QuickDraw extends Component {
             <ReactSpeedometer
               textColor="white"
               needleColor="white"
+              startColor="gray"
+              endColor="red"
               minValue={0}
-              maxValue={100}
+              maxValue={1}
+              segments={20}
+              maxSegmentLabels={5}
               value={detectorValue}
+              valueFormat=".0%"
             />
           </div>
+          HEXAGON DETECTOR
         </div>
         <div className="padding" />
       </div>
