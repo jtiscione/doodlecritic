@@ -37,6 +37,12 @@ class DoodleCanvas extends Component {
     }
   }
 
+  componentDidUpdate(prevProps) {
+    if (this.props.target !== prevProps.target) {
+      this.ctx.fillRect(0, 0, this.props.width, this.props.height);
+    }
+  }
+
   onMouseDown(event) {
     event.preventDefault();
 
@@ -117,6 +123,7 @@ class DoodleCanvas extends Component {
 }
 
 DoodleCanvas.propTypes = {
+  target: PropTypes.string.isRequired,
   width: PropTypes.number.isRequired,
   height: PropTypes.number.isRequired,
   sendPaintData: PropTypes.func.isRequired,

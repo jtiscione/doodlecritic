@@ -21,7 +21,7 @@ function App() {
         </a>
       </header>
       */}
-      <header>Draw a hexagon.</header>
+      <header>QUICKDRAW</header>
       <QuickDraw />
     </div>
   );

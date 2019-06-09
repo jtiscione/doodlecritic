@@ -4,10 +4,6 @@ html, body {
   background-color: black;
 }
 
-div {
-  border: 1px dotted gray;
-}
-
 .App {
 
   text-align: center;
@@ -23,40 +19,61 @@ div {
   }
 
   .QuickDraw {
-    border: 1px solid red;
-    display: flex;
-    justify-content: center;
 
-    .padding {
-      flex-grow: 1;
+    .prompt {
+      border: 1px solid yellow;
+      margin-bottom: 20px;
+      font-size: 20pt;
     }
 
-    canvas {
-      box-shadow: 1px 1px 10px;
-    }
-
-    .rightSide {
-
-      margin: auto;
+    .main {
+      border: 1px solid red;
       display: flex;
-      flex-direction: column;
+      justify-content: center;
 
-      .cloud-box {
-        align-self: center;
-        border: 1px solid purple;
-        width: 500px;
-        height: 100px;
+      .padding {
+        flex-grow: 1;
       }
 
-      .gauge-box {
-        align-self: center;
-        border: 1px solid orange;
-        width: 320px;
-        height: 200px;
+      canvas {
+        box-shadow: 1px 1px 10px;
       }
+
+      .rightSide {
+
+        margin: auto;
+        display: flex;
+        flex-direction: column;
+
+        .cloud-box {
+          align-self: center;
+          border: 1px solid purple;
+          width: 500px;
+          height: 100px;
+        }
+
+        .gauge-box {
+          align-self: center;
+          border: 1px solid orange;
+          width: 320px;
+          height: 200px;
+        }
+
+        .bottom {
+          margin-top: 25px;
+          button {
+            background-color: orange;
+            width: 300px;
+            height: 80px;
+            font-size: 24pt;
+          }
+        }
+
+      }
+
     }
-
   }
+
 
 }
 
