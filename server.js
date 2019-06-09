@@ -23,6 +23,10 @@ app.use((req, res, _next) => {
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 
+app.get('/labels', async (req, res) => {
+  res.status(200).send(classifier.labels);
+});
+
 app.post('/paint', async (req, res) => {
   const { body } = req;
   const output = await classifier.classify(body.input);
