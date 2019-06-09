@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import throttle from 'lodash.throttle';
 
 import { TagCloud } from 'react-tagcloud';
 
@@ -13,9 +14,8 @@ class QuickDraw extends Component {
 
   constructor(props) {
     super(props);
-    this.sendPaintData = this.sendPaintData.bind(this);
+    this.sendPaintData = throttle(this.sendPaintData, 500, { leading: true, trailing: true}).bind(this);
     this.resetPaintData = this.resetPaintData.bind(this);
-    this.drawTestPaintData = this.drawTestPaintData.bind(this);
   }
 
   state = { networkOutputs: [] };
@@ -68,29 +68,6 @@ class QuickDraw extends Component {
     this.setState({ networkOutputs: [] });
   }
 
-  drawTestPaintData(ctx) {
-    ctx.beginPath();
-    const centerX = CANVAS_WIDTH / 2;
-    const centerY = CANVAS_WIDTH / 2;
-    const r = CANVAS_WIDTH / 2.5; // ~100
-    ctx.strokeStyle = 'white';
-
-    for (let i = 0; i <= 6; i++) {
-      const angle = (2 * Math.PI) * (i / 6);
-      const x = Math.round(centerX + r * Math.cos(angle));
-      const y = Math.round(centerY - r * Math.sin(angle));
-      if (i === 0) {
-        console.log(`moveTo(${x}, ${y})`);
-        ctx.moveTo(x, y);
-      } else {
-        // i is always 255
-        console.log(`lineTo(${x}, ${y})`);
-        ctx.lineTo(x, y);
-        ctx.stroke();
-      }
-    }
-  }
-
   render() {
     const { networkOutputs = [] } = this.state;
     return (
@@ -101,7 +78,29 @@ class QuickDraw extends Component {
           height={CANVAS_HEIGHT}
           sendPaintData={this.sendPaintData}
           resetPaintData={this.resetPaintData}
-          drawTestPaintData={this.drawTestPaintData}
+          drawTestPaintData={
+            (ctx) => {
+              ctx.beginPath();
+              const centerX = CANVAS_WIDTH / 2;
+              const centerY = CANVAS_WIDTH / 2;
+              const r = CANVAS_WIDTH / 2.5; // ~100
+              ctx.strokeStyle = 'white';
+              for (let i = 0; i <= 6; i++) {
+                const angle = (2 * Math.PI) * (i / 6);
+                const x = Math.round(centerX + r * Math.cos(angle));
+                const y = Math.round(centerY - r * Math.sin(angle));
+                if (i === 0) {
+                  console.log(`moveTo(${x}, ${y})`);
+                  ctx.moveTo(x, y);
+                } else {
+                  // i is always 255
+                  console.log(`lineTo(${x}, ${y})`);
+                  ctx.lineTo(x, y);
+                  ctx.stroke();
+                }
+              }
+            }
+          }
         />
         <div className="cloud-box">
           <TagCloud

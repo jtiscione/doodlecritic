@@ -78,6 +78,7 @@ class DoodleCanvas extends Component {
     this.ctx.lineTo(offsetX, offsetY);
     this.ctx.stroke();
     this.prevPos = { offsetX, offsetY };
+    this.props.sendPaintData(this.canvasRef.current);
   }
 
   mousePosition(evt) {
