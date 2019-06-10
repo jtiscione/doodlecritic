@@ -1,7 +1,9 @@
+$background: black;
 
+$breakpoint: 1080px;
 
 html, body {
-  background-color: black;
+  background-color: $background;
 }
 
 .App {
@@ -31,12 +33,19 @@ html, body {
       display: flex;
       justify-content: center;
 
+      flex-direction: column;
+      @media (min-width: $breakpoint) {
+        flex-direction: row;
+      }
+
       .padding {
         flex-grow: 1;
       }
 
-      canvas {
-        box-shadow: 1px 1px 10px;
+      .DoodleCanvas {
+        canvas {
+          box-shadow: 1px 1px 10px;
+        }
       }
 
       .rightSide {
