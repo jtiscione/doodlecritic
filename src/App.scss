@@ -21,11 +21,15 @@ html, body {
     font-size: 20pt;
   }
 
+  article {
+    text-align: left;
+  }
+
   .QuickDraw {
 
     .prompt {
-      border: 1px solid yellow;
-      margin-bottom: 20px;
+      border-top: 3px solid orange;
+      margin: 20px 0px 5px 0px;
       font-size: 20pt;
     }
 

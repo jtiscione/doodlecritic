@@ -106,12 +106,12 @@ class QuickDraw extends Component {
     const promptText = (tgt) => {
       if (tgt) {
         if (tgt.match(/s$/) || tgt.match(/^The\s/)) {
-          return 'Draw ';
+          return '';
         }
         if (tgt.match(/^[aeiou]/)) {
-          return 'Draw an ';
+          return 'an ';
         }
-        return 'Draw a ';
+        return 'a ';
       }
       return '';
     };
@@ -127,7 +127,7 @@ class QuickDraw extends Component {
     return (
       <div className="QuickDraw">
         <div className="prompt">
-          {promptText(target)}
+          {`Draw ${promptText(target)}`}
           <span>{target.toUpperCase() + '.'}</span>
         </div>
         <div className="main">
@@ -191,7 +191,7 @@ class QuickDraw extends Component {
             {target.toUpperCase()}
             &nbsp;DETECTOR
             <div className="bottom">
-              <button type="button" className="next" onClick={this.onNext}>NEXT</button>
+              <button type="button" className="next" onClick={this.onNext}>SKIP</button>
             </div>
           </div>
 
