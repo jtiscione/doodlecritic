@@ -19,9 +19,10 @@ class QuickDraw extends Component {
     super(props);
     this.sendPaintData = throttle(this.sendPaintData, 1000, { leading: true, trailing: true }).bind(this);
     this.resetPaintData = this.resetPaintData.bind(this);
-    this.assessPaintData = this.assessPaintData.bind(this);
     this.onNext = this.onNext.bind(this);
   }
+
+  pencilDown = false;
 
   state = {
     targetIndex: -1,
@@ -53,7 +54,11 @@ class QuickDraw extends Component {
   }
 
   onNext() {
-    this.setState(prevState => ({ targetIndex: prevState.targetIndex + 1 }));
+    this.setState(prevState => ({
+      targetIndex: prevState.targetIndex + 1,
+      valueByLabel: {},
+      tags: [],
+    }));
   }
 
   sendPaintData(mainCanvas) {
@@ -94,7 +99,14 @@ class QuickDraw extends Component {
       return null;
     }).then((result) => {
       if (result) {
-        this.setState(result.output);
+        if (this.pencilDown) {
+          this.setState(result.output);
+        } else {
+          const topTag = result.output.tags ? (result.output.tags[0] || '') : '';
+          if (topTag && topTag.value === this.state.shuffledLabels[this.state.targetIndex]) {
+            this.setState({ ...result.output, congratulations: true });
+          }
+        }
       }
     }).catch((e) => {
       console.log(e);
@@ -106,10 +118,6 @@ class QuickDraw extends Component {
   }
 
   assessPaintData() {
-    const topTag = this.state.tags[0];
-    if (topTag && topTag.value === this.state.shuffledLabels[this.state.targetIndex]) {
-      this.setState({ congratulations: true });
-    }
   }
 
   render() {
@@ -149,7 +157,8 @@ class QuickDraw extends Component {
             height={CANVAS_HEIGHT}
             sendPaintData={this.sendPaintData}
             resetPaintData={this.resetPaintData}
-            assessPaintData={this.assessPaintData}
+            onPencilDown={() => { this.pencilDown = true; }}
+            onPencilUp={() => { this.pencilDown = false; }}
             drawTestPaintData={
               (ctx) => {
                 ctx.beginPath();
@@ -212,7 +221,12 @@ class QuickDraw extends Component {
           show={this.state.congratulations}
           title="TITLE"
           text="SweetAlert text"
-          onConfirm={() => this.setState(prevState => ({ targetIndex: prevState.targetIndex + 1, congratulations: false }))}
+          onConfirm={() => this.setState(prevState => ({
+            targetIndex: prevState.targetIndex + 1,
+            congratulations: false,
+            valueByLabel: {},
+            tags: [],
+          }))}
         />
       </div>
     );

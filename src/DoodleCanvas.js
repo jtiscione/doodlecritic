@@ -59,6 +59,7 @@ class DoodleCanvas extends Component {
     const { offsetX, offsetY } = this.mousePosition(event);
     this.pencilDown = true;
     this.prevPos = { offsetX, offsetY };
+    this.props.onPencilDown();
     this.paint(this.prevPos, this.prevPos);
   }
 
@@ -90,8 +91,8 @@ class DoodleCanvas extends Component {
   onMouseUp(_evt) {
     if (this.pencilDown) {
       this.pencilDown = false;
+      this.props.onPencilUp();
       this.props.sendPaintData(this.canvasRef.current);
-      this.props.assessPaintData();
     }
   }
 
@@ -153,7 +154,8 @@ DoodleCanvas.propTypes = {
   height: PropTypes.number.isRequired,
   sendPaintData: PropTypes.func.isRequired,
   resetPaintData: PropTypes.func.isRequired,
-  assessPaintData: PropTypes.func.isRequired,
+  onPencilDown: PropTypes.func.isRequired,
+  onPencilUp: PropTypes.func.isRequired,
   drawTestPaintData: PropTypes.func,
 };
 
