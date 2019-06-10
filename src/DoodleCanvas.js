@@ -9,8 +9,8 @@ const BACKGROUND_COLOR = 'white';
 
 class DoodleCanvas extends Component {
 
-  isPainting = false;
-
+  pencilDown = false;
+  eraseMode = false;
   prevPos = { offsetX: 0, offsetY: 0 };
 
   constructor(props) {
@@ -18,7 +18,9 @@ class DoodleCanvas extends Component {
     this.canvasRef = React.createRef();
     this.onMouseDown = this.onMouseDown.bind(this);
     this.onMouseMove = this.onMouseMove.bind(this);
-    this.onMouseEnter = this.onMouseEnter.bind(this);
+    this.onDrawMode = this.onDrawMode.bind(this);
+    this.onEraseMode = this.onEraseMode.bind(this);
+    this.onClear = this.onClear.bind(this);
     this.onMouseUp = this.onMouseUp.bind(this);
   }
 
@@ -53,39 +55,55 @@ class DoodleCanvas extends Component {
     }
 
     const { offsetX, offsetY } = this.mousePosition(event);
-    this.isPainting = true;
+    this.pencilDown = true;
     this.prevPos = { offsetX, offsetY };
-    this.paint(this.prevPos, this.prevPos, STROKE_COLOR);
+    this.paint(this.prevPos, this.prevPos);
   }
 
   onMouseMove(event) {
-    if (this.isPainting) {
+    if (this.pencilDown) {
       const { offsetX, offsetY } = this.mousePosition(event);
       const offsetData = { offsetX, offsetY };
-      this.paint(this.prevPos, offsetData, STROKE_COLOR);
+      this.paint(this.prevPos, offsetData);
     }
   }
 
-  onMouseEnter(_event) {
+  onDrawMode(_event) {
+    this.eraseMode = false;
+  }
+
+  onEraseMode(_event) {
+    this.eraseMode = true;
+  }
+
+  onClear(_event) {
     const canvas = this.canvasRef.current;
     const context = canvas.getContext('2d');
     context.fillStyle = BACKGROUND_COLOR;
     context.fillRect(0, 0, this.props.width, this.props.height);
     this.props.resetPaintData();
+    this.eraseMode = false;
   }
 
   onMouseUp(_evt) {
-    if (this.isPainting) {
-      this.isPainting = false;
+    if (this.pencilDown) {
+      this.pencilDown = false;
       this.props.sendPaintData(this.canvasRef.current);
     }
   }
 
-  paint(prevPos, currPos, strokeStyle) {
+  paint(prevPos, currPos) {
     const { offsetX, offsetY } = currPos;
     const { offsetX: x, offsetY: y } = prevPos;
     // this.ctx.filter = 'blur(4px)';
-    this.ctx.strokeStyle = strokeStyle;
+    this.ctx.strokeStyle = STROKE_COLOR;
+    this.ctx.lineWidth = STROKE_WIDTH;
+    this.ctx.strokeWidth = STROKE_WIDTH;
+    if (this.eraseMode) {
+      this.ctx.strokeStyle = BACKGROUND_COLOR;
+      this.ctx.lineWidth = 10 * STROKE_WIDTH;
+      this.ctx.strokeWidth = 10 * STROKE_WIDTH;
+    }
     this.ctx.beginPath();
     this.ctx.moveTo(x, y);
     this.ctx.lineTo(offsetX, offsetY);
@@ -113,8 +131,12 @@ class DoodleCanvas extends Component {
           onMouseLeave={this.onMouseUp}
           onMouseUp={this.onMouseUp}
           onMouseMove={this.onMouseMove}
-          onMouseEnter={this.onMouseEnter}
         />
+        <div className="toolbar">
+          <button type="button" className="button" onClick={this.onDrawMode}>DRAW</button>
+          <button type="button" className="button" onClick={this.onEraseMode}>ERASE</button>
+          <button type="button" className="button" onClick={this.onClear}>CLEAR</button>
+        </div>
       </div>
     );
   }

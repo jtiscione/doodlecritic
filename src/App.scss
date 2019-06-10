@@ -13,6 +13,7 @@ html, body {
   height: 100%;
   padding: 100px;
   color: white;
+  font-family: Ubuntu, Helvetica, Arial, "Lucida Grande", sans-serif;
 
   header {
     border: 1px solid purple;
@@ -44,7 +45,37 @@ html, body {
 
       .DoodleCanvas {
         canvas {
+          margin: 20px 20px 0px 20px;
           box-shadow: 1px 1px 10px;
+        }
+
+        .toolbar {
+
+          margin: 0px 20px 20px 20px;
+          display: flex;
+
+          .button {
+            background-color: orange;
+            border-radius: 8px;
+            text-align: center;
+            width: 70px;
+            margin: 3px;
+            padding: 4px 8px;
+            border: 1px solid #a12727;
+            font-size: 12pt;
+            color: black;
+            text-decoration: none;
+          }
+          .button:hover {
+            color: white;
+            text-decoration: none;
+          }
+          .button:active {
+            background: brown;
+          }
+
+
+
         }
       }
 
@@ -72,6 +103,7 @@ html, body {
           margin-top: 25px;
           button {
             background-color: orange;
+            border-radius: 8px;
             width: 300px;
             height: 80px;
             font-size: 24pt;
