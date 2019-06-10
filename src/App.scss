@@ -16,7 +16,6 @@ html, body {
   font-family: Ubuntu, Helvetica, Arial, "Lucida Grande", sans-serif;
 
   header {
-    border: 1px solid purple;
     margin-bottom: 20px;
     font-size: 20pt;
   }
@@ -34,7 +33,6 @@ html, body {
     }
 
     .main {
-      border: 1px solid red;
       display: flex;
       justify-content: center;
 
@@ -54,9 +52,12 @@ html, body {
         }
 
         .toolbar {
-
           margin: 0px 20px 20px 20px;
           display: flex;
+          justify-content: center;
+          @media (min-width: $breakpoint) {
+            justify-content: flex-start;
+          }
 
           .button {
             background-color: orange;
@@ -91,14 +92,12 @@ html, body {
 
         .cloud-box {
           align-self: center;
-          border: 1px solid purple;
           width: 500px;
           height: 100px;
         }
 
         .gauge-box {
           align-self: center;
-          border: 1px solid orange;
           width: 320px;
           height: 200px;
         }
