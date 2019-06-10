@@ -10,7 +10,9 @@ const BACKGROUND_COLOR = 'white';
 class DoodleCanvas extends Component {
 
   pencilDown = false;
+
   eraseMode = false;
+
   prevPos = { offsetX: 0, offsetY: 0 };
 
   constructor(props) {
@@ -89,6 +91,7 @@ class DoodleCanvas extends Component {
     if (this.pencilDown) {
       this.pencilDown = false;
       this.props.sendPaintData(this.canvasRef.current);
+      this.props.assessPaintData();
     }
   }
 
@@ -150,6 +153,7 @@ DoodleCanvas.propTypes = {
   height: PropTypes.number.isRequired,
   sendPaintData: PropTypes.func.isRequired,
   resetPaintData: PropTypes.func.isRequired,
+  assessPaintData: PropTypes.func.isRequired,
   drawTestPaintData: PropTypes.func,
 };
 

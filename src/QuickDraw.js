@@ -1,8 +1,10 @@
 import React, { Component } from 'react';
-import throttle from 'lodash.throttle';
 
 import ReactSpeedometer from 'react-d3-speedometer';
 import { TagCloud } from 'react-tagcloud';
+import SweetAlert from 'sweetalert2-react';
+
+import throttle from 'lodash.throttle';
 
 import DoodleCanvas from './DoodleCanvas';
 
@@ -17,6 +19,7 @@ class QuickDraw extends Component {
     super(props);
     this.sendPaintData = throttle(this.sendPaintData, 1000, { leading: true, trailing: true }).bind(this);
     this.resetPaintData = this.resetPaintData.bind(this);
+    this.assessPaintData = this.assessPaintData.bind(this);
     this.onNext = this.onNext.bind(this);
   }
 
@@ -25,6 +28,7 @@ class QuickDraw extends Component {
     shuffledLabels: [],
     valueByLabel: {},
     tags: [],
+    congratulations: false,
   };
 
   componentDidMount() {
@@ -101,6 +105,13 @@ class QuickDraw extends Component {
     this.setState({ valueByLabel: {}, tags: [] });
   }
 
+  assessPaintData() {
+    const topTag = this.state.tags[0];
+    if (topTag && topTag.value === this.state.shuffledLabels[this.state.targetIndex]) {
+      this.setState({ congratulations: true });
+    }
+  }
+
   render() {
 
     const promptText = (tgt) => {
@@ -138,6 +149,7 @@ class QuickDraw extends Component {
             height={CANVAS_HEIGHT}
             sendPaintData={this.sendPaintData}
             resetPaintData={this.resetPaintData}
+            assessPaintData={this.assessPaintData}
             drawTestPaintData={
               (ctx) => {
                 ctx.beginPath();
@@ -194,9 +206,14 @@ class QuickDraw extends Component {
               <button type="button" className="next" onClick={this.onNext}>SKIP</button>
             </div>
           </div>
-
           <div className="padding" />
         </div>
+        <SweetAlert
+          show={this.state.congratulations}
+          title="TITLE"
+          text="SweetAlert text"
+          onConfirm={() => this.setState(prevState => ({ targetIndex: prevState.targetIndex + 1, congratulations: false }))}
+        />
       </div>
     );
   }
