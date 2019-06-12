@@ -71,7 +71,7 @@ module.exports = {
 
     if (this.session === null) {
       this.session = new InferenceSession();
-      await this.session.loadModel('./cnn_model.onnx');
+      await this.session.loadModel(ONNX_FILE);
     }
 
     const inputArray = new Float32Array(inputString.split('').map(digit => (digit === '1' ? 1 : 0)));
