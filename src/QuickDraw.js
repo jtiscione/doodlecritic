@@ -22,7 +22,7 @@ class QuickDraw extends Component {
     shuffledLabels: [],
     valueByLabel: {},
     tags: [],
-    congratulations: false,
+    successfulInput: null,
   };
 
   constructor(props) {
@@ -101,7 +101,7 @@ class QuickDraw extends Component {
         } else {
           const topTag = result.output.tags ? (result.output.tags[0] || '') : '';
           if (topTag && topTag.value === this.state.shuffledLabels[this.state.targetIndex]) {
-            this.setState({ ...result.output, congratulations: true });
+            this.setState({ ...result.output, successfulInput: input });
           }
         }
       }
@@ -210,12 +210,12 @@ class QuickDraw extends Component {
           <div className="padding" />
         </div>
         <SweetAlert
-          show={this.state.congratulations}
+          show={this.state.successfulInput}
           title="TITLE"
-          text="SweetAlert text"
+          text={this.state.successfulInput}
           onConfirm={() => this.setState(prevState => ({
             targetIndex: prevState.targetIndex + 1,
-            congratulations: false,
+            successfulInput: null,
             valueByLabel: {},
             tags: [],
           }))}
