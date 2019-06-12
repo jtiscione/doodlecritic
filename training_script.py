@@ -91,7 +91,8 @@ if MIXED_PRECISION and torch.cuda.is_available():
 # 1. Data consists of a set of text files with ".ndjson" extensions in the specified directory.
 # 2. Each line in the .ndjson file is a JSON string with all data for a single sample.
 # 3. Each line of JSON has the following format (omitting extraneous fields):
-#    {"word":"elephant","drawing":[[[0, 1, 10],[25, 103, 163]],[[4,15,134,234,250],[27,22,6,4,0]]]}
+#    {"word":"elephant","recognized":true,"drawing":[[[0, 1, 10],[25, 103, 163]],[[4,15,134,234,250],[27,22,6,4,0]]]}
+#    The "recognized" flag means Google's system was able to recognize the image (meaning the person can draw).
 #    Array "drawing" has the brush strokes, each stroke a pair of arrays with x and y coordinates on a 256x256 grid.
 # 4. We can build our label list by only looking at the first line of each file. (All lines have same value for "word".)
 class QuickDrawDataset(torch.utils.data.Dataset):
