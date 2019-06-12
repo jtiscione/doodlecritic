@@ -23,7 +23,8 @@ import numpy as np
 # separated into 343 classes.
 #
 # Model used here is a convolutional neural network accepting 1x64x64 inputs
-# (i.e. black-and-white 64x64 images). Output is 343 neurons (i.e. one per label).
+# (i.e. black-and-white 64x64 images). Output is 344 neurons (i.e. one per label) with an extra neuron
+# corresponding to label "nothing".
 #
 # If cnn_model.pth is found (typically saved from a previous run), it will be loaded into the current model;
 # otherwise the network will start with a set of random weights. File size is approx. 300 MB.
@@ -46,8 +47,14 @@ if (len(sys.argv) > 1):
 BATCH_SIZE = 1000
 
 # Hyperparameters
-LEARNING_RATE = 0.01
+OPTIMIZER_NAME = 'SGD'
+
+SGD_LEARNING_RATE = 0.01
 SGD_MOMENTUM = 0
+
+ADAM_LEARNING_RATE = 0.001
+ADAM_BETAS = (0.9, 0.99)
+ADAM_EPSILON = 0.0001
 
 INDEX_CACHE_FILE = './index_cache.pkl'
 LABELS_FILE = './labels.txt'
@@ -57,27 +64,27 @@ ONNX_FILE = './cnn_model.onnx'
 
 # If you have lots of hard drive space available, turn this on to save backups as training progresses.
 # This is useful in case the script crashes at some point.
-# (Raising the batch size too high can cause spurious out-of-memory errors at random times.
-# Enabling NVidia's extension also causes instability.)
+# (Raising the batch size too high can cause spurious out-of-memory errors at random times.)
 SAVE_BACKUP_FILES = False
 NUMBERED_STATE_DICT_FILE_TEMPLATE = './cnn_model_{}.pth'
 
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-# Turn this on to enable NVidia's AMP extension to Pytorch, once it stabilizes:
+# Turn this on to enable NVidia's AMP extension to Pytorch on an RTX card
 MIXED_PRECISION = False
 
 if MIXED_PRECISION and torch.cuda.is_available():
     # See if NVidia's Apex AMP Pytorch extension has been installed to leverage RTX tensor cores
-    # by performing FP-16 calculations; otherwise stick to standard FP32.
-    # If we are using mixed precision we can raise the batch size by about 75%.
+    # by performing FP16 calculations; otherwise stick to standard FP32.
+    # If we are using mixed precision we can raise the batch size but keep it a multiple of 8.
     try:
         from apex import amp, optimizers
         MIXED_PRECISION = True
-        BATCH_SIZE = int(BATCH_SIZE * 1.75)
+        BATCH_SIZE = int(BATCH_SIZE * 1.6)
         print('Using mixed precision.')
     except ImportError:
         MIXED_PRECISION = False
+
 
 # This is a torch DataSet implementation that makes the following assumptions:
 #
@@ -89,7 +96,9 @@ if MIXED_PRECISION and torch.cuda.is_available():
 # 4. We can build our label list by only looking at the first line of each file. (All lines have same value for "word".)
 class QuickDrawDataset(torch.utils.data.Dataset):
 
-    def __init__(self, dataDir):
+    # Take the batch size, so we know how much to pad with all-zero samples mapping to the "blank" channel.
+    # This way we ensure we deliver full-sized batches interspersed with a few blank samples mapping to label "nothing".
+    def __init__(self, dataDir, batch_size):
         super(QuickDrawDataset, self).__init__()
         print(dataDir)
         self.dataDir = dataDir
@@ -117,10 +126,18 @@ class QuickDrawDataset(torch.utils.data.Dataset):
                 byte_offset += len(line)
             file.close()
 
+        self.labelListIndices['nothing'] = len(self.labelList)
+        self.labelList.append('nothing')
+        self.paddingLength = batch_size - (len(self.filenameByIndex) % batch_size)
+        print('padding length {}'.format(self.paddingLength))
+
     def __len__(self):
-        return len(self.filenameByIndex)
+        return len(self.filenameByIndex) + self.paddingLength
 
     def __getitem__(self, idx):
+        if idx >= len(self.filenameByIndex):
+            # NULL sample
+            return torch.zeros(1, 64, 64, dtype=torch.float), self.labelListIndices['nothing']
         filename = self.filenameByIndex[idx]
         byte_offset = self.fileByteOffsetByIndex[idx]
         file = open(self.dataDir + '/' + filename, 'r')
@@ -154,7 +171,7 @@ class QuickDrawDataset(torch.utils.data.Dataset):
 # Applies two convolutional layers and three fully connected layers.
 class CNNModel(nn.Module):
 
-    # input_size is 64 (input samples are 64x64 images); num_classes is 343
+    # input_size is 64 (input samples are 64x64 images); num_classes is 344
     def __init__(self, input_size, num_classes):
         super(CNNModel, self).__init__()
         self.layer1 = nn.Sequential(
@@ -169,8 +186,8 @@ class CNNModel(nn.Module):
             nn.MaxPool2d(kernel_size=2, stride=2))
         dimension = int(64 * pow(input_size / 4, 2))
         # dimension = int(64 * pow(input_size / 4 - 3, 2))
-        self.fc1 = nn.Sequential(nn.Linear(dimension, int(dimension / 4)), nn.Dropout(0.5))
-        self.fc2 = nn.Sequential(nn.Linear(int(dimension / 4), int(dimension / 8)), nn.Dropout(0.5))
+        self.fc1 = nn.Sequential(nn.Linear(dimension, int(dimension / 4)), nn.Dropout2d(0.25))
+        self.fc2 = nn.Sequential(nn.Linear(int(dimension / 4), int(dimension / 8)), nn.Dropout(0.25))
         self.fc3 = nn.Sequential(nn.Linear(int(dimension / 8), num_classes))
 
     def forward(self, x):
@@ -191,7 +208,7 @@ if __name__ == '__main__':
         dataSet = pickle.load(infile)
         infile.close()
     else:
-        dataSet = QuickDrawDataset(DATA_DIRECTORY)
+        dataSet = QuickDrawDataset(DATA_DIRECTORY, BATCH_SIZE)
         outfile = open(INDEX_CACHE_FILE, 'wb')
         pickle.dump(dataSet, outfile)
         outfile.close()
@@ -217,7 +234,16 @@ if __name__ == '__main__':
         state_dict = torch.load(STATE_DICT_FILE)
         model.load_state_dict(state_dict)
 
-    optimizer = optim.SGD(model.parameters(), lr = LEARNING_RATE, momentum=SGD_MOMENTUM)
+    if (OPTIMIZER_NAME == 'SGD'):
+        optimizer = optim.SGD(model.parameters(), lr = SGD_LEARNING_RATE, momentum=SGD_MOMENTUM)
+        print('Using SGD with learning rate {} and momentum {}'.format(SGD_LEARNING_RATE, SGD_MOMENTUM))
+
+    if (OPTIMIZER_NAME == 'Adam'):
+        if MIXED_PRECISION:
+            optimizer = optim.Adam(model.parameters(), lr = ADAM_LEARNING_RATE, betas = ADAM_BETAS, eps = ADAM_EPSILON)
+        else:
+            optimizer = optim.Adam(model.parameters(), lr = ADAM_LEARNING_RATE)
+        print('Using Adam with learning rate {}'.format(ADAM_LEARNING_RATE))
 
     if MIXED_PRECISION:
         # Using NVidia's AMP Pytorch extension
@@ -230,7 +256,8 @@ if __name__ == '__main__':
     record_rolling_average = 0
     count = 0
 
-    for epoch in range(20):
+    # Each epoch takes about 4 hours
+    for epoch in range(5):
         print('Epoch: {}'.format(epoch))
         batch_number = 0
         for i, (images, labels) in enumerate(dataLoader):
@@ -273,14 +300,16 @@ if __name__ == '__main__':
                 print('Saved model file {}'.format(STATE_DICT_FILE))
             # ONNX: same policy
             if (os.path.isfile(ONNX_FILE) == False):
-                dummy_input = torch.randn(1, 1, 64, 64).to(DEVICE)
-                torch.onnx.export(model, dummy_input, ONNX_FILE)
-                print('Saved ONNX file {}'.format(ONNX_FILE))
+                with amp.disable_casts():
+                    dummy_input = torch.randn(1, 1, 64, 64).to(DEVICE)
+                    torch.onnx.export(model, dummy_input, ONNX_FILE, verbose=True)
+                    print('Saved ONNX file {}'.format(ONNX_FILE))
 
         # Epoch finished
         # Save the current model at the end of an epoch
         torch.save(model.state_dict(), STATE_DICT_FILE)
         # Export ONNX
-        dummy_input = torch.randn(1, 1, 64, 64).to(DEVICE)
-        torch.onnx.export(model, dummy_input, ONNX_FILE)
+        with amp.disable_casts():
+            dummy_input = torch.randn(1, 1, 64, 64).to(DEVICE)
+            torch.onnx.export(model, dummy_input, ONNX_FILE, verbose=True)
         print('EPOCH {} FINISHED, SAVED MODEL FILES'.format(epoch))
