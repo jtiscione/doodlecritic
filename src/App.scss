@@ -1,5 +1,7 @@
 $background: black;
+$foreground: orange;
 $breakpoint: 1280px;
+$button-border-color: #a12727;
 
 html, body {
   background-color: $background;
@@ -7,14 +9,14 @@ html, body {
 
 .App {
   text-align: center;
-  background-image: linear-gradient(steelblue, black);
+  background-image: linear-gradient(steelblue, $background);
   color: white;
   font-family: Ubuntu, Helvetica, Arial, "Lucida Grande", sans-serif;
   padding: 10px;
 
   .QuickDraw {
     .prompt {
-      border-bottom: 3px solid orange;
+      border-bottom: 3px solid $foreground;
       font-size: 20pt;
     }
     .main {
@@ -52,15 +54,15 @@ html, body {
           }
 
           .button {
-            background-color: orange;
+            background-color: $foreground;
             border-radius: 8px;
             text-align: center;
             width: 70px;
             margin: 3px;
             padding: 4px 8px;
-            border: 1px solid #a12727;
+            border: 1px solid $button-border-color;
             font-size: 12pt;
-            color: black;
+            color: $background;
             text-decoration: none;
           }
 
@@ -84,8 +86,8 @@ html, body {
         .skip {
           margin-top: 25px;
           button {
-            background-color: orange;
-            border: 1px solid #a12727;
+            background-color: $foreground;
+            border: 1px solid $button-border-color;
             border-radius: 8px;
             width: 300px;
             height: 80px;

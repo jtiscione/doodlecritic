@@ -22,7 +22,6 @@
     "webpack-dev-server": "react-scripts start",
     "clean": "rm -rf ./build",
     "build": "react-scripts build",
-    "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {

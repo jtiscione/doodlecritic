@@ -15,11 +15,6 @@ const app = express();
 if (haveBuildFolder) {
   app.use(express.static(buildFolderPath));
 }
-/*
-app.use((req, res, _next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-});
-*/
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 
