@@ -15,13 +15,6 @@ const INPUT_HEIGHT = 64;
 
 class QuickDraw extends Component {
 
-  constructor(props) {
-    super(props);
-    this.sendPaintData = throttle(this.sendPaintData, 1000, { leading: true, trailing: true }).bind(this);
-    this.resetPaintData = this.resetPaintData.bind(this);
-    this.onNext = this.onNext.bind(this);
-  }
-
   pencilDown = false;
 
   state = {
@@ -32,10 +25,16 @@ class QuickDraw extends Component {
     congratulations: false,
   };
 
+  constructor(props) {
+    super(props);
+    this.sendPaintData = throttle(this.sendPaintData, 1000, { leading: true, trailing: true }).bind(this);
+    this.resetPaintData = this.resetPaintData.bind(this);
+    this.onNext = this.onNext.bind(this);
+  }
+
   componentDidMount() {
-    console.log('componentDidMount');
     if (!this.state.shuffledLabels.length) {
-      console.log('fetching...');
+      console.log('Fetching labels...');
       fetch('/labels', { method: 'GET' }).then((response) => {
         if (response.status === 200) {
           return response.json();
@@ -43,11 +42,9 @@ class QuickDraw extends Component {
         console.log(`/labels: HTTP status ${response.status}`);
         return null;
       }).then((result) => {
-        console.log('then');
         const shuffledLabels = result.map(a => ({ sort: Math.random(), value: a }))
           .sort((a, b) => a.sort - b.sort)
           .map(a => a.value);
-        console.log('Setting targetIndex to 0');
         this.setState({ shuffledLabels, targetIndex: 0 });
       });
     }
@@ -117,9 +114,6 @@ class QuickDraw extends Component {
     this.setState({ valueByLabel: {}, tags: [] });
   }
 
-  assessPaintData() {
-  }
-
   render() {
 
     const promptText = (tgt) => {
@@ -137,12 +131,9 @@ class QuickDraw extends Component {
 
     const target = this.state.shuffledLabels[this.state.targetIndex] || '';
 
-    console.log('targetIndex', this.state.targetIndex);
-
     const { valueByLabel = {}, tags = [] } = this.state;
     const detectorValue = valueByLabel[target] || 0;
 
-    console.log(detectorValue);
     return (
       <div className="QuickDraw">
         <div className="prompt">
@@ -150,7 +141,10 @@ class QuickDraw extends Component {
           <span>{target.toUpperCase() + '.'}</span>
         </div>
         <div className="main">
-          <div className="padding" />
+          <div className="leftside">
+            <h2>QUICKDRAW</h2>
+            <article>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</article>
+          </div>
           <DoodleCanvas
             target={target}
             width={CANVAS_WIDTH}
@@ -170,11 +164,9 @@ class QuickDraw extends Component {
                   const x = Math.round(centerX + r * Math.cos(angle));
                   const y = Math.round(centerY - r * Math.sin(angle));
                   if (i === 0) {
-                    console.log(`moveTo(${x}, ${y})`);
                     ctx.moveTo(x, y);
                   } else {
                     // i is always 255
-                    console.log(`lineTo(${x}, ${y})`);
                     ctx.lineTo(x, y);
                     ctx.stroke();
                   }
@@ -211,7 +203,7 @@ class QuickDraw extends Component {
             </div>
             {target.toUpperCase()}
             &nbsp;DETECTOR
-            <div className="bottom">
+            <div className="skip">
               <button type="button" className="next" onClick={this.onNext}>SKIP</button>
             </div>
           </div>

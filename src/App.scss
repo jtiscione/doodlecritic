@@ -1,37 +1,22 @@
 $background: black;
-
-$breakpoint: 1080px;
+$breakpoint: 1280px;
 
 html, body {
   background-color: $background;
 }
 
 .App {
-
   text-align: center;
   background-image: linear-gradient(steelblue, black);
-  height: 100%;
-  padding: 100px;
   color: white;
   font-family: Ubuntu, Helvetica, Arial, "Lucida Grande", sans-serif;
-
-  header {
-    margin-bottom: 20px;
-    font-size: 20pt;
-  }
-
-  article {
-    text-align: left;
-  }
+  padding: 10px;
 
   .QuickDraw {
-
     .prompt {
-      border-top: 3px solid orange;
-      margin: 20px 0px 5px 0px;
+      border-bottom: 3px solid orange;
       font-size: 20pt;
     }
-
     .main {
       display: flex;
       justify-content: center;
@@ -41,18 +26,25 @@ html, body {
         flex-direction: row;
       }
 
-      .padding {
+      .leftside {
         flex-grow: 1;
+        margin: 10px;
+        header {
+
+        }
+        article {
+          text-align: left;
+        }
       }
 
       .DoodleCanvas {
         canvas {
-          margin: 20px 20px 0px 20px;
+          margin: 20px 20px 0 20px;
           box-shadow: 1px 1px 10px;
         }
 
         .toolbar {
-          margin: 0px 20px 20px 20px;
+          margin: 0 20px 20px 20px;
           display: flex;
           justify-content: center;
           @media (min-width: $breakpoint) {
@@ -71,16 +63,15 @@ html, body {
             color: black;
             text-decoration: none;
           }
+
           .button:hover {
             color: white;
             text-decoration: none;
           }
+
           .button:active {
             background: brown;
           }
-
-
-
         }
       }
 
@@ -89,6 +80,18 @@ html, body {
         margin: auto;
         display: flex;
         flex-direction: column;
+
+        .skip {
+          margin-top: 25px;
+          button {
+            background-color: orange;
+            border: 1px solid #a12727;
+            border-radius: 8px;
+            width: 300px;
+            height: 80px;
+            font-size: 24pt;
+          }
+        }
 
         .cloud-box {
           align-self: center;
@@ -101,52 +104,24 @@ html, body {
           width: 320px;
           height: 200px;
         }
-
-        .bottom {
-          margin-top: 25px;
-          button {
-            background-color: orange;
-            border-radius: 8px;
-            width: 300px;
-            height: 80px;
-            font-size: 24pt;
-          }
-        }
-
       }
-
     }
   }
 
+  footer {
+    display: flex;
 
-}
+    .leftEnd {
+      padding: 15px;
+      font-size: 14pt;
+    }
 
-.App-logo {
-  animation: App-logo-spin infinite 20s linear;
-  height: 40vmin;
-  pointer-events: none;
-}
+    .center {
+      flex-grow: 1;
+    }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
+    .rightEnd {
+      padding: 15px;
+    }
   }
 }

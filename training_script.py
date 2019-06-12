@@ -33,10 +33,14 @@ import numpy as np
 # at the end of each training epoch, and also whenever those files are found to be missing.
 # (To get the up-to-date versions of these files, delete the current ones while the script is running.)
 #
-# If SAVE_BACKUP_FILES is set, then it will save a backup of the current model with a unique filename
+# If SAVE_BACKUP_FILES is set to True here, then it will save a backup of the current model with a unique filename
 # whenever it notices that its average performance over time has set a record, so that progress doesn't get lost
 # if there is a crash during the run (usually from BATCH_SIZE being set too high). Default value is false since
 # the files are 300 MB each.
+
+# Set MIXED_PRECISION is set to True to use NVidia's AMP library which processes weights on the GPU using FP-16.
+# BATCH_SIZE can be safely raised by 60%. On an RTX card, AMP will do 16-bit math using Tensor Cores IF tensor
+# dimensions are all multiples of 8.
 
 # Specify data folder as command line argument; default is ~/data/quickdraw
 DATA_DIRECTORY = expanduser('~/data/quickdraw')
@@ -44,6 +48,7 @@ if (len(sys.argv) > 1):
     DATA_DIRECTORY = sys.argv[1]
 
 # This is a safe batch size to use on an RTX 2060 with 6 GB.
+# (Typical industry practice: lower this from an insanely high value until out-of-memory errors go away)
 BATCH_SIZE = 1000
 
 # Hyperparameters
@@ -63,8 +68,7 @@ STATE_DICT_FILE = './cnn_model.pth'
 ONNX_FILE = './cnn_model.onnx'
 
 # If you have lots of hard drive space available, turn this on to save backups as training progresses.
-# This is useful in case the script crashes at some point.
-# (Raising the batch size too high can cause spurious out-of-memory errors at random times.)
+# This is useful in case the script crashes at some point (usually when it runs out of memory.)
 SAVE_BACKUP_FILES = False
 NUMBERED_STATE_DICT_FILE_TEMPLATE = './cnn_model_{}.pth'
 
@@ -74,9 +78,10 @@ DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 MIXED_PRECISION = False
 
 if MIXED_PRECISION and torch.cuda.is_available():
-    # See if NVidia's Apex AMP Pytorch extension has been installed to leverage RTX tensor cores
-    # by performing FP16 calculations; otherwise stick to standard FP32.
-    # If we are using mixed precision we can raise the batch size but keep it a multiple of 8.
+    # See if NVidia's Apex AMP Pytorch extension has been installed. If so we can raise BATCH_SIZE without
+    # running out of memory on the card by performing FP16 calculations. Otherwise we stick to standard FP32.
+    # If MIXED_PRECISION is set, the batch size and number of outputs (and dimensions of all hidden layers)
+    # must be multiples of 8 in order to trigger NVidia's optimizations that use RTX Tensor Cores.
     try:
         from apex import amp, optimizers
         MIXED_PRECISION = True
@@ -257,7 +262,7 @@ if __name__ == '__main__':
     record_rolling_average = 0
     count = 0
 
-    # Each epoch takes about 4 hours
+    # RTX 2060: Each epoch takes about 4 hours; the GPU card consumes 200W under load we use ~1 kW/h
     for epoch in range(5):
         print('Epoch: {}'.format(epoch))
         batch_number = 0
