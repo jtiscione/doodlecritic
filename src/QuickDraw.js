@@ -2,16 +2,34 @@ import React, { Component } from 'react';
 
 import ReactSpeedometer from 'react-d3-speedometer';
 import { TagCloud } from 'react-tagcloud';
-import SweetAlert from 'sweetalert2-react';
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
 
 import throttle from 'lodash.throttle';
 
 import DoodleCanvas from './DoodleCanvas';
+import TensorView from './TensorView';
+
+const CongratulatorySwal = withReactContent(Swal);
 
 const CANVAS_WIDTH = 500;
 const CANVAS_HEIGHT = 500;
 const INPUT_WIDTH = 64;
 const INPUT_HEIGHT = 64;
+
+const promptText = (tgt, toUpperCase) => {
+  if (tgt) {
+    const label = toUpperCase ? tgt.toUpperCase() : tgt;
+    if (tgt.match(/s$/) || tgt.match(/^The\s/)) {
+      return label;
+    }
+    if (tgt.match(/^[aeiou]/)) {
+      return `an ${label}`;
+    }
+    return `a ${label}`;
+  }
+  return '';
+};
 
 class QuickDraw extends Component {
 
@@ -61,16 +79,12 @@ class QuickDraw extends Component {
   sendPaintData(mainCanvas) {
 
     const miniCanvas = document.createElement('canvas');
-
     miniCanvas.width = INPUT_WIDTH;
     miniCanvas.height = INPUT_HEIGHT;
-
     const miniContext = miniCanvas.getContext('2d');
     miniContext.fillStyle = DoodleCanvas.BACKGROUND_COLOR;
     miniContext.fillRect(0, 0, INPUT_WIDTH, INPUT_HEIGHT);
-
     miniContext.drawImage(mainCanvas, 0, 0, mainCanvas.width, mainCanvas.height, 0, 0, INPUT_WIDTH, INPUT_HEIGHT);
-
     const imageData = miniContext.getImageData(0, 0, INPUT_WIDTH, INPUT_HEIGHT);
     let input = '';
     for (let i = 0; i < imageData.data.length; i += 4) {
@@ -82,7 +96,6 @@ class QuickDraw extends Component {
         input += '1';
       }
     }
-
     // Send the image to the server, fetch result
     fetch('/paint', {
       method: 'POST',
@@ -99,9 +112,23 @@ class QuickDraw extends Component {
         if (this.pencilDown) {
           this.setState(result.output);
         } else {
+          const target = this.state.shuffledLabels[this.state.targetIndex];
           const topTag = result.output.tags ? (result.output.tags[0] || '') : '';
-          if (topTag && topTag.value === this.state.shuffledLabels[this.state.targetIndex]) {
+          if (topTag && topTag.value === target) {
             this.setState({ ...result.output, successfulInput: input });
+            CongratulatorySwal.fire({
+              title: <p>CONGRATULATIONS!</p>,
+              footer: `This looks like ${promptText(target, false)}!`,
+              html: <TensorView tensor={input} />,
+              onClose: () => {
+                this.setState(prevState => ({
+                  targetIndex: prevState.targetIndex + 1,
+                  successfulInput: null,
+                  valueByLabel: {},
+                  tags: [],
+                }));
+              }
+            });
           }
         }
       }
@@ -116,19 +143,6 @@ class QuickDraw extends Component {
 
   render() {
 
-    const promptText = (tgt) => {
-      if (tgt) {
-        if (tgt.match(/s$/) || tgt.match(/^The\s/)) {
-          return '';
-        }
-        if (tgt.match(/^[aeiou]/)) {
-          return 'an ';
-        }
-        return 'a ';
-      }
-      return '';
-    };
-
     const target = this.state.shuffledLabels[this.state.targetIndex] || '';
 
     const { valueByLabel = {}, tags = [] } = this.state;
@@ -136,16 +150,36 @@ class QuickDraw extends Component {
 
     return (
       <div className="QuickDraw">
-        <div className="prompt">
-          {`Draw ${promptText(target)}`}
-          <span>{target.toUpperCase() + '.'}</span>
-        </div>
+        <header>
+          DOODLE RECOGNITION
+        </header>
         <div className="main">
           <div className="leftside">
-            <h2>QUICKDRAW</h2>
-            <article>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</article>
+            <h2>GET YOUR DOODLES RECOGNIZED HERE.</h2>
+            <article>
+              <p>
+                Draw in the canvas, and a neural network will guess what you're drawing!
+              </p>
+              <p>It was trained using <a href="https://quickdraw.withgoogle.com">The Quick, Draw! Dataset</a> from Google,
+                a downloadable database of 50 million doodles in 343 categories.
+              </p>
+              <p>
+                My neural network is not as good as Google's! They have a server farm and I have an RTX 2060 video card.
+                It identifies doodles correctly only 70% as often as they do. So you will have to draw carefully. Don't
+                feel bad if you can't get your doodle recognized. With some of these things, I have no clue what it's looking for!
+              </p>
+              <p>
+                This is a convolutional neural network with a very straightforward design. (Google uses a recurrent
+                neural network that pays attention to the order of your strokes as you draw.)
+                If you think you can do better, feel free to fork this project on <a href="http://gethub.com/jtiscione/doodle-recognition">Github.</a>
+                The training script is written in Python and uses the Pytorch library. You can swap out my neural network
+                model definition with your own. You will need to download about 20 GB of data from Google if you want to
+                train your own network.
+              </p>
+            </article>
           </div>
           <DoodleCanvas
+            title={`Draw ${promptText(target, true)}.`}
             target={target}
             width={CANVAS_WIDTH}
             height={CANVAS_HEIGHT}
@@ -209,22 +243,9 @@ class QuickDraw extends Component {
           </div>
           <div className="padding" />
         </div>
-        <SweetAlert
-          show={this.state.successfulInput}
-          title="TITLE"
-          text={this.state.successfulInput}
-          onConfirm={() => this.setState(prevState => ({
-            targetIndex: prevState.targetIndex + 1,
-            successfulInput: null,
-            valueByLabel: {},
-            tags: [],
-          }))}
-        />
       </div>
     );
   }
-
-
 }
 
 export default QuickDraw;

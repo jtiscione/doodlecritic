@@ -1,0 +1,37 @@
+.TensorView {
+  width: 400px;
+  height: 400px;
+  background-color: steelblue;
+  color: white;
+  text-align: center;
+  margin: auto;
+
+  .lines {
+
+    padding: 8px;
+
+    div {
+      margin: 0;
+      border: 0;
+      padding: 0;
+    }
+
+    .line {
+      display: flex;
+
+      .zero {
+        border: 1px solid #AAA;
+        width: 4px;
+        height: 4px;
+        background-color: white;
+      }
+
+      .one {
+
+        width: 6px;
+        height: 6px;
+        background-color: black;
+      }
+    }
+  }
+}

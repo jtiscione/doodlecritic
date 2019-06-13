@@ -14,10 +14,20 @@ html, body {
   font-family: Ubuntu, Helvetica, Arial, "Lucida Grande", sans-serif;
   padding: 10px;
 
+  a {
+    color: orange;
+  }
+  a:visited {
+    color: yellow;
+  }
+
   .QuickDraw {
-    .prompt {
+    header {
+      padding-bottom: 10px;
       border-bottom: 3px solid $foreground;
       font-size: 20pt;
+    }
+    .prompt {
     }
     .main {
       display: flex;
@@ -31,8 +41,13 @@ html, body {
       .leftside {
         flex-grow: 1;
         margin: 10px;
-        header {
-
+        border-bottom: 3px solid $foreground;
+        border-right: 0;
+        padding: 5px 10px 5px 5px;
+        @media (min-width: $breakpoint) {
+          border-bottom: 0;
+          border-right: 3px solid $foreground;
+          padding: 5px 5px 10px 5px;
         }
         article {
           text-align: left;
@@ -40,6 +55,10 @@ html, body {
       }
 
       .DoodleCanvas {
+        .title {
+          font-size: 20pt;
+          margin-top: 20px;
+        }
         canvas {
           margin: 20px 20px 0 20px;
           box-shadow: 1px 1px 10px;
@@ -97,7 +116,7 @@ html, body {
 
         .cloud-box {
           align-self: center;
-          width: 500px;
+          width: 460px;
           height: 100px;
         }
 
@@ -120,6 +139,7 @@ html, body {
 
     .center {
       flex-grow: 1;
+      padding: 15px;
       text-align: center;
     }
 

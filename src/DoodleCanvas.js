@@ -50,11 +50,13 @@ class DoodleCanvas extends Component {
   onMouseDown(event) {
     event.preventDefault();
 
+    /*
     if (event.button === 2 && this.props.drawTestPaintData) {
       this.props.drawTestPaintData(this.ctx);
       this.props.sendPaintData(this.canvasRef.current);
       return;
     }
+     */
 
     const { offsetX, offsetY } = this.mousePosition(event);
     this.pencilDown = true;
@@ -127,6 +129,7 @@ class DoodleCanvas extends Component {
   render() {
     return (
       <div className="DoodleCanvas">
+        <div className="title">{this.props.title}</div>
         <canvas
           width={this.props.width}
           height={this.props.height}
@@ -149,6 +152,7 @@ class DoodleCanvas extends Component {
 }
 
 DoodleCanvas.propTypes = {
+  title: PropTypes.string.isRequired,
   target: PropTypes.string.isRequired,
   width: PropTypes.number.isRequired,
   height: PropTypes.number.isRequired,
@@ -156,9 +160,6 @@ DoodleCanvas.propTypes = {
   resetPaintData: PropTypes.func.isRequired,
   onPencilDown: PropTypes.func.isRequired,
   onPencilUp: PropTypes.func.isRequired,
-  drawTestPaintData: PropTypes.func,
 };
-
-DoodleCanvas.defaultProps = { drawTestPaintData: (() => {}) };
 
 export default DoodleCanvas;

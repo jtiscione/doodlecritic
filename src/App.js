@@ -8,9 +8,9 @@ function App() {
     <div className="App">
       <QuickDraw />
       <footer>
-        <div className="leftEnd">LEFT SIDE</div>
-        <div className="center">CENTER TEXT</div>
-        <div className="rightEnd">RIGHT SIDE</div>
+        <div className="leftEnd">Jason Tiscione</div>
+        <div className="center"></div>
+        <div className="rightEnd"><a href="http://github.com/jtiscione/doodle-recognition">Github repository</a></div>
       </footer>
     </div>
   );
