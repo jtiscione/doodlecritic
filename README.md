@@ -4,108 +4,99 @@
 Draw in the canvas, and a neural network will guess what you're drawing!
 
 It has been trained using [The Quick, Draw! Dataset](https://quickdraw.withgoogle.com) from Google,
-a downloadable database of 50 million doodles separated into 343 categories.
+a downloadable database of 50 million doodles separated into 343 categories. Google uses a recurrent neural network
+that pays attention to the speed and timing of your strokes as you draw. This one has a simpler design.
 
-Try to be patient with its poor vision! My neural network is only 70% as accurate as the one at Google.
-They have a server farm, and I have an RTX 2060 card with 6 GB.
+Try to be patient with its poor vision; it's only 70% as accurate as Google's. They have server farms powered by
+offshore wind turbines. I have an RTX 2060 card with 6 GB.
 
 You will have to draw carefully for it. Keep in mind that it has only seen doodles people have drawn
-in 20 seconds or less, and most people can't draw. As soon as Google recognizes a doodle, they
-snatch the canvas away from the artist and move on to the next. Therefore your doodle should look like
-it took less than 20 seconds to draw.
+in 20 seconds or less, and half these people CAN'T DRAW. As soon as Google recognizes a doodle, they
+snatch the canvas away and move on to the next. Therefore your doodle should look like it took you less than
+20 seconds.
 
 Some of the more annoying characteristics of neural networks are on display here. A few categories are
-easy to draw because they've become synonyms for "I don't know". Other categories are
+easy to draw because they've somehow become synonyms for "I don't know". Other categories are
 almost impossible. With many of them I have no clue what this thing is looking for.
 
-Google uses a recurrent neural network that notices the speed and timing of your strokes as you draw.
 This is a convolutional neural network with a conventional, vanilla design; it just looks at the image.
 If you think you can do better, feel free to fork this project on [Github](http://gethub.com/jtiscione/doodlecritic)
-and swap out this network's simple model structure with your own. The training script is written in
-Python using the Pytorch library. You will need to download about 20 GB of data from Google if you want to
-train your own network.
+and swap out this network's simple model structure with your own.
+
+***
 
 # PROJECT DETAILS
 
-### JAVASCRIPT STUFF
+### PYTHON STUFF (training phase)
 
-This is a Node.js based app, using Express and React to provide an interface to a
-pretrained network. The network definition is loaded in ONNX format by the server on startup; it is a
-300 MB file called `cnn_model.onnx` and is too big to check into the repository.
+If you don't like the way this network behaves, you can train your own, possibly with a different design.
+The only constraints are the dimensions of the input layer and the output layer. What happens between them is
+up to you.
+
+All the training code is in `training_script.py`. This Python script will train a neural network and write the model
+files to the project folder.
+ 
+Using this script for training a network using Google's datasets will require a GPU, a full day, and several kilowatt hours.
+(A CPU will take a week.) You will need to download about 20 GB of data from Google.
+
+#### Instructions
+
+First install Python on your system, then install numpy, PIL (Python Image Library), and Pytorch, using `pip install`.
+
+If you're running Linux on a system with an RTX card (totally normal behavior) you can install
+[NVidia's CUDA Toolkit](https://developer.nvidia.com/cuda-downloads),
+and follow their instructions for installing their [Automatic Mixed Precision libary](https://nvidia.github.io/apex/amp.html)
+which is a Pytorch extension for performing float-16 arithmetic on the GPU using NVidia's Tensor Cores. If you do this, 
+then initialize `MIXED_PRECISION` to `True` in the script. This will cut down on training time and tight memory constraints.
+
+Once trained, the network can discriminate among 343 different categories. If you're not interested in training 
+against that many categories, remove their data files before starting the training script.
+
+While the script is running, deleting `cnn_model.onnx` (or `cnn_model.pth`) will trigger a replacement with fresh versions.
+This way you can see how the network is behaving at various phases of training by periodically deleting the existing
+`cnn_model.onnx` and running the webapp against the new version that appears.
+
+
+### JAVASCRIPT STUFF (deployment phase)
+
+Unlike training, deploying a neural network requires little computing power. A Raspberry Pi can handle it easily.
+The network is deployed as a Node.js app that uses Express on the server and React on the client.
+
+In general, neural networks can be downloaded in ONNX format and run in the client's browser, but not this one-
+`cnn_model.onnx` is 300 MB and must stay on the server. Upon startup the server will load the file 
+(or download it from S3 if it's missing) and initialize the network. Clients then communicate with it using a REST API
+that accepts a 64x64 black and white image and responds with a list of guesses. 
 
 If you start the server without `cnn_model.onnx` present, it will download a copy from a bucket I left on S3.
 A much smaller file (`labels.txt`) will also be downloaded from S3 if it is not present. In general these two
-files are a matched set and are generated by the Python training script.
+files are a matched set generated by the Python training script. Both are included in `.gitignore`.
 
-
-
-
-
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
-
-## Available Scripts
+### Available Scripts
 
 In the project directory, you can run:
 
-### `npm start`
-
-Runs the app in the development mode.<br>
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
-
-The page will reload if you make edits.<br>
-You will also see any lint errors in the console.
-
-### `npm test`
-
-Launches the test runner in the interactive watch mode.<br>
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
+#### `npm run build`
 
 Builds the app for production to the `build` folder.<br>
 It correctly bundles React in production mode and optimizes the build for the best performance.
+The app is now ready to be deployed using `npm start`.
 
-The build is minified and the filenames include the hashes.<br>
-Your app is ready to be deployed!
+#### `npm run clean`
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Blows away the `build` folder.
 
-### `npm run eject`
+#### `npm start`
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+Starts the Express server listening on port 8000. (This basically means running `node ./server.js`.)
+If `npm run build` has been executed, a build folder will be found, and its contents will be served as static files.
+Otherwise the server will warn you that you need to run the `webpack-dev-server` script.
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
 
-Instead, it will copy all the configuration files and the transitive dependencies (Webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+#### `npm run webpack-dev-server`.
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+Runs the app in development mode (for React development). This needs to be run alongside `npm start` and after `npm run clean`.
+The app will then be visible on port 3000. The page will reload if you make edits.
 
-## Learn More
+#### `npm run eject`
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
-
-### Analyzing the Bundle Size
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
-
-### Making a Progressive Web App
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
-
-### Advanced Configuration
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
-
-### Deployment
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
-
-### `npm run build` fails to minify
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+This is a one-way, irreversible operation. Run this if you like dealing with Webpack files.
