@@ -32,6 +32,10 @@ app.post('/paint', async (req, res) => {
   res.send({ input, output });
 });
 
+app.get('/readme', async (req, res) => {
+  res.sendFile(path.join(__dirname, '/README.md'));
+});
+
 if (haveBuildFolder) {
   app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'build', 'index.html'));

@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 
+import Markdown from 'react-markdown';
 import ReactSpeedometer from 'react-d3-speedometer';
 import { TagCloud } from 'react-tagcloud';
 import Swal from 'sweetalert2';
@@ -36,6 +37,7 @@ class QuickDraw extends Component {
   pencilDown = false;
 
   state = {
+    readme: null,
     targetIndex: -1,
     shuffledLabels: [],
     valueByLabel: {},
@@ -54,16 +56,37 @@ class QuickDraw extends Component {
     if (!this.state.shuffledLabels.length) {
       console.log('Fetching labels...');
       fetch('/labels', { method: 'GET' }).then((response) => {
-        if (response.status === 200) {
-          return response.json();
+        if (response.status !== 200) {
+          console.log(`/labels: HTTP status ${response.status}`);
+          return null;
         }
-        console.log(`/labels: HTTP status ${response.status}`);
-        return null;
+        return response.json();
       }).then((result) => {
-        const shuffledLabels = result.map(a => ({ sort: Math.random(), value: a }))
-          .sort((a, b) => a.sort - b.sort)
-          .map(a => a.value);
-        this.setState({ shuffledLabels, targetIndex: 0 });
+        if (result) {
+          const shuffledLabels = result.map(a => ({ sort: Math.random(), value: a }))
+            .sort((a, b) => a.sort - b.sort)
+            .map(a => a.value);
+          this.setState({ shuffledLabels, targetIndex: 0 });
+        }
+      }).catch((e) => {
+        console.log(e);
+      });
+    }
+
+    if (!this.state.readme) {
+      console.log('Fetching README.md...');
+      fetch('/readme', { method: 'GET' }).then((response) => {
+        if (response.status !== 200) {
+          console.log(`/labels: HTTP status ${response.status}`);
+          return null;
+        }
+        return response.text();
+      }).then((result) => {
+        if (result) {
+          this.setState({ readme: result });
+        }
+      }).catch((e) => {
+        console.log(e);
       });
     }
   }
@@ -155,6 +178,9 @@ class QuickDraw extends Component {
         </header>
         <div className="main">
           <div className="leftside">
+            {
+              this.state.readme ? <Markdown source={this.state.readme} className="readme" /> : <div />
+            }
             <h3>GET IMMEDIATE FEEDBACK ON YOUR ART.</h3>
             <article>
               <p>
