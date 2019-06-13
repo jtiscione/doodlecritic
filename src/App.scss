@@ -40,6 +40,8 @@ html, body {
 
       .leftside {
         flex-grow: 1;
+        height: 600px;
+        overflow: scroll;
         margin: 10px;
         border-bottom: 3px solid $foreground;
         border-right: 0;

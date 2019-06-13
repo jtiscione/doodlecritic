@@ -9,8 +9,8 @@ function App() {
       <QuickDraw />
       <footer>
         <div className="leftEnd">Jason Tiscione</div>
-        <div className="center"></div>
-        <div className="rightEnd"><a href="http://github.com/jtiscione/doodle-recognition">Github repository</a></div>
+        <div className="center" />
+        <div className="rightEnd"><a href="http://github.com/jtiscione/doodlecritic">Github repository</a></div>
       </footer>
     </div>
   );
