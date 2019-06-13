@@ -181,40 +181,6 @@ class QuickDraw extends Component {
             {
               this.state.readme ? <Markdown source={this.state.readme} className="readme" /> : <div />
             }
-            <h3>GET IMMEDIATE FEEDBACK ON YOUR ART.</h3>
-            <article>
-              <p>
-                Draw in the canvas, and a neural network will guess what you're drawing!
-              </p>
-              <p>
-                It was trained using <a href="https://quickdraw.withgoogle.com">The Quick, Draw! Dataset</a> from Google,
-                a downloadable database of 50 million doodles separated into 343 categories.
-              </p>
-              <p>
-                Try to be patient with its poor vision! This neural network is only 70% as accurate as the one at Google.
-                They have a server farm and I have an RTX 2060 card with 6 GB. So this is actually not bad for a first
-                attempt, but that remaining 30% is going to be a real pain.
-              </p>
-              <p>
-                So you will have to draw carefully. Keep in mind that it has only seen doodles people have drawn
-                in 20 seconds or less, and most people can't draw. And as soon as Google recognizes your doodle they
-                snatch it and move on to the next before you can complete your drawing. If this network fails to
-                recognize your doodle, drawing a Rembrandt is probably a waste of time.
-              </p>
-              <p>
-                Some of the more annoying characteristics of neural networks are on display here. A few categories are
-                easy to draw because the network has chosen them to be synonyms for "I don't know". Other categories are
-                almost impossible. With many of them I have no clue what this thing is looking for.
-              </p>
-              <p>
-                Google uses a recurrent neural network that notices the speed and timing of your strokes as you draw.
-                This is a convolutional neural network with a conventional, vanilla design; it just looks at the image.
-                If you think you can do better, feel free to fork this project on <a href="http://gethub.com/jtiscione/doodlecritic">Github</a>,&nbsp;
-                and swap out this network's model structure with your own. The training script is written in Python
-                using the Pytorch library. You will need to download about 20 GB of data from Google if you want to
-                train your own network.
-              </p>
-            </article>
           </div>
           <DoodleCanvas
             title={`Draw ${promptText(target, true)}.`}
