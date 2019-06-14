@@ -33,14 +33,10 @@ import numpy as np
 # at the end of each training epoch, and also whenever those files are found to be missing.
 # (To get the up-to-date versions of these files, delete the current ones while the script is running.)
 #
-# If SAVE_BACKUP_FILES is set to True here, then it will save a backup of the current model with a unique filename
+# If SAVE_BACKUP_FILES is set, then it will save a backup of the current model with a unique filename
 # whenever it notices that its average performance over time has set a record, so that progress doesn't get lost
 # if there is a crash during the run (usually from BATCH_SIZE being set too high). Default value is false since
 # the files are 300 MB each.
-
-# Set MIXED_PRECISION is set to True to use NVidia's AMP library which processes weights on the GPU using FP-16.
-# BATCH_SIZE can be safely raised by 60%. On an RTX card, AMP will do 16-bit math using Tensor Cores IF tensor
-# dimensions are all multiples of 8.
 
 # Specify data folder as command line argument; default is ~/data/quickdraw
 DATA_DIRECTORY = expanduser('~/data/quickdraw')
@@ -48,7 +44,6 @@ if (len(sys.argv) > 1):
     DATA_DIRECTORY = sys.argv[1]
 
 # This is a safe batch size to use on an RTX 2060 with 6 GB.
-# (Typical industry practice: lower this from an insanely high value until out-of-memory errors go away)
 BATCH_SIZE = 1000
 
 # Hyperparameters
@@ -67,21 +62,22 @@ LABELS_FILE = './labels.txt'
 STATE_DICT_FILE = './cnn_model.pth'
 ONNX_FILE = './cnn_model.onnx'
 
-# If you have lots of hard drive space available, turn this on to save backups as training progresses.
-# This is useful in case the script crashes at some point (usually when it runs out of memory.)
-SAVE_BACKUP_FILES = False
+# Turn this on to save backups as training progresses. Each time performance reaches a new record,
+# a file will be saved with a number in the filename indicating the number of correct responses.
+# This is useful in case the script crashes at some point.
+# (Raising the batch size too high can cause spurious out-of-memory errors at random times.)
+SAVE_BACKUP_FILES = True
 NUMBERED_STATE_DICT_FILE_TEMPLATE = './cnn_model_{}.pth'
 
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-# Turn this on to enable NVidia's AMP extension to Pytorch on an RTX card
+# If it's installed, turn this on to enable NVidia's AMP Pytorch extension on an RTX card
 MIXED_PRECISION = False
 
 if MIXED_PRECISION and torch.cuda.is_available():
-    # See if NVidia's Apex AMP Pytorch extension has been installed. If so we can raise BATCH_SIZE without
-    # running out of memory on the card by performing FP16 calculations. Otherwise we stick to standard FP32.
-    # If MIXED_PRECISION is set, the batch size and number of outputs (and dimensions of all hidden layers)
-    # must be multiples of 8 in order to trigger NVidia's optimizations that use RTX Tensor Cores.
+    # See if NVidia's Apex AMP Pytorch extension has been installed to leverage RTX tensor cores
+    # by performing FP16 calculations; otherwise stick to standard FP32.
+    # If we are using mixed precision we can raise the batch size but keep it a multiple of 8.
     try:
         from apex import amp, optimizers
         MIXED_PRECISION = True
@@ -96,8 +92,7 @@ if MIXED_PRECISION and torch.cuda.is_available():
 # 1. Data consists of a set of text files with ".ndjson" extensions in the specified directory.
 # 2. Each line in the .ndjson file is a JSON string with all data for a single sample.
 # 3. Each line of JSON has the following format (omitting extraneous fields):
-#    {"word":"elephant","recognized":true,"drawing":[[[0, 1, 10],[25, 103, 163]],[[4,15,134,234,250],[27,22,6,4,0]]]}
-#    The "recognized" flag means Google's system was able to recognize the image (meaning the person can draw).
+#    {"word":"elephant","drawing":[[[0, 1, 10],[25, 103, 163]],[[4,15,134,234,250],[27,22,6,4,0]]]}
 #    Array "drawing" has the brush strokes, each stroke a pair of arrays with x and y coordinates on a 256x256 grid.
 # 4. We can build our label list by only looking at the first line of each file. (All lines have same value for "word".)
 class QuickDrawDataset(torch.utils.data.Dataset):
@@ -106,7 +101,7 @@ class QuickDrawDataset(torch.utils.data.Dataset):
     # This way we ensure we deliver full-sized batches interspersed with a few blank samples mapping to label "nothing".
     def __init__(self, dataDir, batch_size):
         super(QuickDrawDataset, self).__init__()
-        print(dataDir)
+        print('Data folder: ' + dataDir)
         self.dataDir = dataDir
         self.filenames = list(filter(lambda x: x.endswith(".ndjson"), sorted(os.listdir(dataDir)))) #[1:20]
         self.filenameByIndex = []
@@ -115,7 +110,7 @@ class QuickDrawDataset(torch.utils.data.Dataset):
         self.labelList = []
 
         for filename in self.filenames:
-            print(filename)
+            print('Indexing ' + filename)
             file = open(dataDir + "/" + filename, "r")
             byte_offset = 0
             word = None
@@ -175,6 +170,7 @@ class QuickDrawDataset(torch.utils.data.Dataset):
 
 # Takes input of size Nx1x64x64, a batch of N black and white 64x64 images.
 # Applies two convolutional layers and three fully connected layers.
+
 class CNNModel(nn.Module):
 
     # input_size is 64 (input samples are 64x64 images); num_classes is 344
@@ -191,8 +187,7 @@ class CNNModel(nn.Module):
             nn.ReLU(inplace=True),
             nn.MaxPool2d(kernel_size=2, stride=2))
         dimension = int(64 * pow(input_size / 4, 2))
-        # dimension = int(64 * pow(input_size / 4 - 3, 2))
-        self.fc1 = nn.Sequential(nn.Linear(dimension, int(dimension / 4)), nn.Dropout2d(0.25))
+        self.fc1 = nn.Sequential(nn.Linear(dimension, int(dimension / 4)), nn.Dropout(0.25))
         self.fc2 = nn.Sequential(nn.Linear(int(dimension / 4), int(dimension / 8)), nn.Dropout(0.25))
         self.fc3 = nn.Sequential(nn.Linear(int(dimension / 8), num_classes))
 
@@ -236,20 +231,24 @@ if __name__ == '__main__':
     model = CNNModel(input_size=64, num_classes=len(dataSet.labelList)).to(DEVICE)
 
     if (os.path.isfile(STATE_DICT_FILE)):
+        # We found an existing cnn_model.pth file! Instead of starting from scratch we'll load this one.
+        # and continue training it.
         print("Loading {}".format(STATE_DICT_FILE))
         state_dict = torch.load(STATE_DICT_FILE)
         model.load_state_dict(state_dict)
 
+    optimizer = None
     if (OPTIMIZER_NAME == 'SGD'):
         optimizer = optim.SGD(model.parameters(), lr = SGD_LEARNING_RATE, momentum=SGD_MOMENTUM)
         print('Using SGD with learning rate {} and momentum {}'.format(SGD_LEARNING_RATE, SGD_MOMENTUM))
-
-    if (OPTIMIZER_NAME == 'Adam'):
+    elif (OPTIMIZER_NAME == 'Adam'):
         if MIXED_PRECISION:
             optimizer = optim.Adam(model.parameters(), lr = ADAM_LEARNING_RATE, betas = ADAM_BETAS, eps = ADAM_EPSILON)
         else:
             optimizer = optim.Adam(model.parameters(), lr = ADAM_LEARNING_RATE)
         print('Using Adam with learning rate {}'.format(ADAM_LEARNING_RATE))
+    else:
+        print('No optimizer specified!')
 
     if MIXED_PRECISION:
         # Using NVidia's AMP Pytorch extension
@@ -258,12 +257,13 @@ if __name__ == '__main__':
     criterion = nn.CrossEntropyLoss()
 
     ROLLING_AVERAGE_RUN_LENGTH = 100
-    rolling = np.zeros(ROLLING_AVERAGE_RUN_LENGTH)
+    rolling = np.zeros(0)
     record_rolling_average = 0
     count = 0
 
-    # RTX 2060: Each epoch takes about 4 hours; the GPU card consumes 200W under load we use ~1 kW/h
-    for epoch in range(5):
+    # On my computer each epoch takes about 4 hours; the script consumes ~250 watts or about 1 kWh per epoch.
+    # Performance reaches a plateau after 3-4 epochs.
+    for epoch in range(4):
         print('Epoch: {}'.format(epoch))
         batch_number = 0
         for i, (images, labels) in enumerate(dataLoader):
@@ -274,8 +274,11 @@ if __name__ == '__main__':
             outputs = model(images)
             _, predicted = torch.max(outputs.data, 1)
             correct = (predicted == labels).sum().item()
-            rolling = np.roll(rolling, 1)
-            rolling[0] = correct
+            if (count < ROLLING_AVERAGE_RUN_LENGTH):
+                rolling = np.insert(rolling, 0, correct)
+            else:
+                rolling = np.roll(rolling, 1)
+                rolling[0] = correct
             rolling_average = int(np.mean(rolling))
             loss = criterion(outputs, labels)
             if MIXED_PRECISION:
@@ -290,15 +293,21 @@ if __name__ == '__main__':
             batch_number += 1
             # print(loss.item())
 
-            # To be safe, save model whenever the performance reaches a new high
+            # To be safe, save model whenever performance reaches a new high
             if (count < 2 * ROLLING_AVERAGE_RUN_LENGTH):  # (once rolling average has had time to stabilize)
                 record_rolling_average = max(rolling_average, record_rolling_average)
             else:
                 if (rolling_average > record_rolling_average):
                     # Save model with a munged filename; e.g. cnn_model_706.pth
+                    if (SAVE_BACKUP_FILES):
+                        torch.save(model.state_dict(), NUMBERED_STATE_DICT_FILE_TEMPLATE.format(rolling_average))
+                        print('Saved model file (ROLLING AVG: {})'.format(rolling_average))
+                        # Delete the last backup we wrote to avoid filling up the drive with 300 MB files
+                        if (record_rolling_average > 0):
+                            old_file = NUMBERED_STATE_DICT_FILE_TEMPLATE.format(record_rolling_average)
+                            if os.path.exists(old_file):
+                                os.remove(old_file)
                     record_rolling_average = rolling_average
-                    torch.save(model.state_dict(), NUMBERED_STATE_DICT_FILE_TEMPLATE.format(record_rolling_average))
-                    print('Saved model file (ROLLING AVG: {})'.format(record_rolling_average))
 
             # Deleting the model file during training triggers a fresh rewrite:
             if (os.path.isfile(STATE_DICT_FILE) == False):
@@ -306,16 +315,23 @@ if __name__ == '__main__':
                 print('Saved model file {}'.format(STATE_DICT_FILE))
             # ONNX: same policy
             if (os.path.isfile(ONNX_FILE) == False):
-                with amp.disable_casts():
+                if MIXED_PRECISION:
+                    with amp.disable_casts():
+                        dummy_input = torch.randn(1, 1, 64, 64).to(DEVICE)
+                        torch.onnx.export(model, dummy_input, ONNX_FILE, verbose=True)
+                else:
                     dummy_input = torch.randn(1, 1, 64, 64).to(DEVICE)
                     torch.onnx.export(model, dummy_input, ONNX_FILE, verbose=True)
-                    print('Saved ONNX file {}'.format(ONNX_FILE))
-
+                print('Exported ONNX file {}'.format(ONNX_FILE))
         # Epoch finished
         # Save the current model at the end of an epoch
         torch.save(model.state_dict(), STATE_DICT_FILE)
         # Export ONNX
-        with amp.disable_casts():
+        if (MIXED_PRECISION):
+            with amp.disable_casts():
+                dummy_input = torch.randn(1, 1, 64, 64).to(DEVICE)
+                torch.onnx.export(model, dummy_input, ONNX_FILE, verbose=True)
+        else:
             dummy_input = torch.randn(1, 1, 64, 64).to(DEVICE)
             torch.onnx.export(model, dummy_input, ONNX_FILE, verbose=True)
         print('EPOCH {} FINISHED, SAVED MODEL FILES'.format(epoch))
