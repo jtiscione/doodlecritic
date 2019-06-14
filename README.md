@@ -15,7 +15,7 @@ As soon as Google recognizes a doodle, they snatch the canvas away and move on t
 should look like it took you less than 20 seconds.
 
 This is a convolutional neural network with a conventional, vanilla design. If you think you can do better, 
-feel free to fork this project on [Github](https://gethub.com/jtiscione/doodlecritic).
+feel free to fork this project on [Github](https://github.com/jtiscione/doodlecritic).
 
 ***
 
