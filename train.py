@@ -33,10 +33,10 @@ import numpy as np
 # at the end of each training epoch, and also whenever those files are found to be missing.
 # (To get the up-to-date versions of these files, delete the current ones while the script is running.)
 #
-# If SAVE_BACKUP_FILES is set, then it will save a backup of the current model with a unique filename
-# whenever it notices that its average performance over time has set a record, so that progress doesn't get lost
-# if there is a crash during the run (usually from BATCH_SIZE being set too high). Default value is false since
-# the files are 300 MB each.
+# If SAVE_BACKUP_FILES is set to True, the script will save backups as training progresses.
+# Each time performance reaches a new record, a file will be saved with a number in the filename
+# indicating the new record number of correct responses. This is to avoid losing progress if the script crashes.
+# (Raising the batch size too high can cause spurious out-of-memory errors at random times.)
 
 # Specify data folder as command line argument; default is ~/data/quickdraw
 DATA_DIRECTORY = expanduser('~/data/quickdraw')
@@ -62,10 +62,6 @@ LABELS_FILE = './labels.txt'
 STATE_DICT_FILE = './cnn_model.pth'
 ONNX_FILE = './cnn_model.onnx'
 
-# Turn this on to save backups as training progresses. Each time performance reaches a new record,
-# a file will be saved with a number in the filename indicating the number of correct responses.
-# This is useful in case the script crashes at some point.
-# (Raising the batch size too high can cause spurious out-of-memory errors at random times.)
 SAVE_BACKUP_FILES = True
 NUMBERED_STATE_DICT_FILE_TEMPLATE = './cnn_model_{}.pth'
 
