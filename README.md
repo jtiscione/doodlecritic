@@ -23,7 +23,7 @@ feel free to fork this project on [Github](http://gethub.com/jtiscione/doodlecri
 
 ### PYTHON STUFF (training phase)
 
-You can use the Python script `training_script.py` to create your own network, possibly with a different design.
+You can use the Python script `train.py` to create your own network, possibly with a different design.
 
 This Python script will train a neural network and write the model files to the project folder.
  
@@ -33,7 +33,7 @@ Using it to train a network using Google's data set will require a GPU, a full d
 You will need to download about 20 GB of data from Google, specifically the ["simplified drawing files](https://github.com/googlecreativelab/quickdraw-dataset).
 You can download them from Google Cloud Storage or from [Kaggle](https://www.kaggle.com/google/tinyquickdraw).
 
-By default, `training_script.py` will look for Google's data files within a `data/quickdraw` directory in your home folder. 
+By default, `train.py` will look for Google's data files within a `data/quickdraw` directory in your home folder. 
 If you put them somewhere else, supply the path as a command line argument.
 
 Install Python on your system, then install numpy, PIL (Python Image Library), and Pytorch, using `pip install`.
@@ -41,7 +41,7 @@ Install Python on your system, then install numpy, PIL (Python Image Library), a
 If you're running Linux on a system with an RTX card you can install [NVidia's CUDA Toolkit](https://developer.nvidia.com/cuda-downloads),
 and follow their instructions for installing their [Automatic Mixed Precision libary](https://nvidia.github.io/apex/amp.html)
 which is a Pytorch extension for performing float-16 arithmetic on the GPU using NVidia's Tensor Cores. If you do this, 
-then initialize `MIXED_PRECISION` to `True` in `training_script.py`. This will cut down on training time and tight memory constraints.
+then initialize `MIXED_PRECISION` to `True` in `train.py`. This will cut down on training time and tight memory constraints.
 
 Once trained, the network can discriminate among 343 different classes. If you're not interested in discriminating 
 among that many classes, remove their data files before starting the training script.
