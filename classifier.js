@@ -7,7 +7,7 @@ const onnx = require('onnxjs-node');
 
 const { Tensor, InferenceSession } = onnx;
 
-const DEBUG = true;
+const DEBUG = false;
 
 const ONNX_FILE = 'cnn_model.onnx';
 const LABELS_FILE = 'labels.txt';
