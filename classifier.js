@@ -59,6 +59,10 @@ module.exports = {
     await this.session.loadModel('./' + ONNX_FILE);
   },
 
+  getLabels() {
+    return this.labels.filter((_e, i) => (!(this.labels[i].startsWith('nothing'))));
+  },
+
   /*
    * Classifier method:
    * [Assume] inputString is 4096 bytes long and consists of zeroes and ones.
@@ -82,17 +86,24 @@ module.exports = {
 
     const rawValues = Array.from(outputMap.values())[0].data;
 
+    // Trim off any "nothing" labels. They are all at the end of this.labels.
+    // They are added as padding during training and the client is not interested in them.
+    const nothingOut = ((_e, i) => (!(this.labels[i].startsWith('nothing'))));
+
+    const trimmedValues = rawValues.filter(nothingOut);
+    const trimmedLabels = this.labels.filter(nothingOut);
+
     // Implementation detail with this particular network- we need to compute softmax
-    const exponents = rawValues.map(Math.exp);
+    const exponents = trimmedValues.map(Math.exp);
     const exponentSum = exponents.reduce((acc, e) => acc + e, 0);
     const softmax = exponents.map(e => e / exponentSum);
 
-    const valueByLabel = this.labels.reduce((acc, e, i) => {
+    const valueByLabel = trimmedLabels.reduce((acc, e, i) => {
       acc[e] = softmax[i];
       return acc;
     }, {});
 
-    const sortedLabels = [...this.labels].sort((e1, e2) => valueByLabel[e2] - valueByLabel[e1]);
+    const sortedLabels = trimmedLabels.sort((e1, e2) => valueByLabel[e2] - valueByLabel[e1]);
     // Return top ten
     const tags = sortedLabels.slice(0, limit).map((label => ({ value: label, count: Math.round(1000 * valueByLabel[label]) })))
 

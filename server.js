@@ -19,7 +19,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 
 app.get('/labels', async (req, res) => {
-  res.send(classifier.labels);
+  res.send(classifier.getLabels());
 });
 
 app.post('/paint', async (req, res) => {
