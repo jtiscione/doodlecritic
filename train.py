@@ -69,6 +69,7 @@ NUMBERED_STATE_DICT_FILE_TEMPLATE = './cnn_model_{}.pth'
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 # If it's installed, turn this on to enable NVidia's AMP Pytorch extension on an RTX card
+# Compiling and installing it involves NVidia's CUDA Toolkit to be installed on the system so I will default to False
 MIXED_PRECISION = False
 
 if MIXED_PRECISION and torch.cuda.is_available():
@@ -126,6 +127,14 @@ class QuickDrawDataset(torch.utils.data.Dataset):
 
         self.labelListIndices['nothing'] = len(self.labelList)
         self.labelList.append('nothing')
+        if MIXED_PRECISION:
+          # NVidia really wants tensor dimensions to be multiples of 8, make sure here
+          extra_nothings = 0
+          while len(self.labelList) % 8 > 0:
+            extra_nothings += 1
+            self.labelListIndices['nothing_{}'.format(extra_nothings)] = len(self.labelList)
+            self.labelList.append('nothing_{}'.format(extra_nothings))
+
         self.paddingLength = batch_size - (len(self.filenameByIndex) % batch_size)
         print('padding length {}'.format(self.paddingLength))
 
@@ -156,7 +165,12 @@ class QuickDrawDataset(torch.utils.data.Dataset):
         word = entry.get('word')
         imageTensor = torch.tensor(np.array(im) / 256, dtype=torch.float)
 
-        # Alter image slightly to look like the inputs we're eventually going to get
+        # Alter image slightly to look like the inputs we're eventually going to get from the client.
+        # This is a limitation imposed by JavaScript which implements "antialiasing" on downsized canvases by
+        # nearest-neighbor downsampling smoothed onscreen by a WebGL filter that doesn't write to the image data,
+        # so we only get two-color jagged images.
+        #
+        # Tedious workarounds are possible: https://stackoverflow.com/questions/2303690/resizing-an-image-in-an-html5-canvas
         THRESHOLD = 0.1
         imageTensor[imageTensor >= THRESHOLD] = 1.0
         imageTensor[imageTensor < THRESHOLD] = 0.0
