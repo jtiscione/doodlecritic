@@ -2,6 +2,7 @@ import sys
 import os
 from os.path import expanduser
 import pickle
+import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.utils.data

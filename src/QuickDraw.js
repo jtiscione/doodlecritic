@@ -7,6 +7,7 @@ import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 
 import throttle from 'lodash.throttle';
+import debounce from 'lodash.debounce';
 
 import DoodleCanvas from './DoodleCanvas';
 import TensorView from './TensorView';
@@ -45,6 +46,8 @@ class QuickDraw extends Component {
     successfulInput: null,
   };
 
+  error503Count = 0;
+
   constructor(props) {
     super(props);
     this.sendPaintData = throttle(this.sendPaintData, 1000, { leading: true, trailing: true }).bind(this);
@@ -77,7 +80,7 @@ class QuickDraw extends Component {
       console.log('Fetching README.md...');
       fetch('/readme', { method: 'GET' }).then((response) => {
         if (response.status !== 200) {
-          console.log(`/labels: HTTP status ${response.status}`);
+          console.log(`/readme: HTTP status ${response.status}`);
           return null;
         }
         return response.text();
@@ -126,7 +129,21 @@ class QuickDraw extends Component {
       headers: { 'Content-Type': 'application/json' },
     }).then((response) => {
       if (response.status === 200) {
+        this.error503Count = 0;
         return response.json();
+      }
+      if (response.status === 503) {
+        // Heroku dyno asleep...
+        this.error503Count++;
+        if (this.error503Count === 3) {
+          // Schedule reload for 1 sec
+          setTimeout(() => {
+            if (this.error503Count > 0) {
+              // Nothing changed
+              window.reload();
+            }
+          }, 1000);
+        }
       }
       console.log(`/paint: HTTP status ${response.status}`);
       return null;
@@ -138,20 +155,23 @@ class QuickDraw extends Component {
           const target = this.state.shuffledLabels[this.state.targetIndex];
           const topTag = result.output.tags ? (result.output.tags[0] || '') : '';
           if (topTag && topTag.value === target) {
-            this.setState({ ...result.output, successfulInput: input });
-            CongratulatorySwal.fire({
-              title: <p>CONGRATULATIONS!</p>,
-              footer: `This looks like ${promptText(target, false)}!`,
-              html: <TensorView tensor={input} />,
-              onClose: () => {
-                this.setState(prevState => ({
-                  targetIndex: prevState.targetIndex + 1,
-                  successfulInput: null,
-                  valueByLabel: {},
-                  tags: [],
-                }));
-              },
-            });
+            const f = debounce(() => {
+              this.setState({...result.output, successfulInput: input});
+              CongratulatorySwal.fire({
+                title: <p>CONGRATULATIONS!</p>,
+                footer: `This looks like ${promptText(target, false)}!`,
+                html: <TensorView tensor={input}/>,
+                onClose: () => {
+                  this.setState(prevState => ({
+                    targetIndex: prevState.targetIndex + 1,
+                    successfulInput: null,
+                    valueByLabel: {},
+                    tags: [],
+                  }));
+                },
+              });
+            }, 500);
+            f();
           }
         }
       }
@@ -177,11 +197,6 @@ class QuickDraw extends Component {
           DOODLE CRITIC
         </header>
         <div className="main">
-          <div className="leftside">
-            {
-              this.state.readme ? <Markdown source={this.state.readme} className="readme" /> : <div />
-            }
-          </div>
           <DoodleCanvas
             title={`Draw ${promptText(target, true)}.`}
             target={target}
@@ -191,6 +206,7 @@ class QuickDraw extends Component {
             resetPaintData={this.resetPaintData}
             onPencilDown={() => { this.pencilDown = true; }}
             onPencilUp={() => { this.pencilDown = false; }}
+            onNext={ this.onNext }
             drawTestPaintData={
               (ctx) => {
                 ctx.beginPath();
@@ -212,7 +228,7 @@ class QuickDraw extends Component {
               }
             }
           />
-          <div className="rightSide">
+          <div className="feedback">
             <div className="cloud-box">
               <TagCloud
                 minSize={12}
@@ -241,11 +257,12 @@ class QuickDraw extends Component {
             </div>
             {target.toUpperCase()}
             &nbsp;DETECTOR
-            <div className="skip">
-              <button type="button" className="next" onClick={this.onNext}>SKIP</button>
-            </div>
           </div>
-          <div className="padding" />
+          <div className="documentation">
+            {
+              this.state.readme ? <Markdown source={this.state.readme} className="readme" /> : <div />
+            }
+          </div>
         </div>
       </div>
     );

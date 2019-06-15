@@ -143,6 +143,8 @@ class DoodleCanvas extends Component {
           <button type="button" className="button" onClick={this.onDrawMode}>DRAW</button>
           <button type="button" className="button" onClick={this.onEraseMode}>ERASE</button>
           <button type="button" className="button" onClick={this.onClear}>CLEAR</button>
+          <div class="spacer" />
+          <button type="button" className="button" onClick={this.props.onNext}>SKIP</button>
         </div>
       </div>
     );
@@ -160,6 +162,7 @@ DoodleCanvas.propTypes = {
   resetPaintData: PropTypes.func.isRequired,
   onPencilDown: PropTypes.func.isRequired,
   onPencilUp: PropTypes.func.isRequired,
+  onNext: PropTypes.func.isRequired,
 };
 
 export default DoodleCanvas;
