@@ -207,26 +207,6 @@ class QuickDraw extends Component {
             onPencilDown={() => { this.pencilDown = true; }}
             onPencilUp={() => { this.pencilDown = false; }}
             onNext={ this.onNext }
-            drawTestPaintData={
-              (ctx) => {
-                ctx.beginPath();
-                const centerX = CANVAS_WIDTH / 2;
-                const centerY = CANVAS_WIDTH / 2;
-                const r = CANVAS_WIDTH / 2.5; // ~100
-                for (let i = 0; i <= 6; i++) {
-                  const angle = (2 * Math.PI) * (i / 6);
-                  const x = Math.round(centerX + r * Math.cos(angle));
-                  const y = Math.round(centerY - r * Math.sin(angle));
-                  if (i === 0) {
-                    ctx.moveTo(x, y);
-                  } else {
-                    // i is always 255
-                    ctx.lineTo(x, y);
-                    ctx.stroke();
-                  }
-                }
-              }
-            }
           />
           <div className="feedback">
             <div className="cloud-box">

@@ -49,16 +49,7 @@ class DoodleCanvas extends Component {
 
   onMouseDown(event) {
     event.preventDefault();
-
-    /*
-    if (event.button === 2 && this.props.drawTestPaintData) {
-      this.props.drawTestPaintData(this.ctx);
-      this.props.sendPaintData(this.canvasRef.current);
-      return;
-    }
-     */
-
-    const { offsetX, offsetY } = this.mousePosition(event);
+   const { offsetX, offsetY } = this.mousePosition(event);
     this.pencilDown = true;
     this.prevPos = { offsetX, offsetY };
     this.props.onPencilDown();
