@@ -7,7 +7,6 @@ import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 
 import throttle from 'lodash.throttle';
-import debounce from 'lodash.debounce';
 
 import DoodleCanvas from './DoodleCanvas';
 import TensorView from './TensorView';
@@ -47,6 +46,7 @@ class QuickDraw extends Component {
   };
 
   error503Count = 0;
+  mostRecentAward = null;
 
   constructor(props) {
     super(props);
@@ -154,24 +154,22 @@ class QuickDraw extends Component {
         } else {
           const target = this.state.shuffledLabels[this.state.targetIndex];
           const topTag = result.output.tags ? (result.output.tags[0] || '') : '';
-          if (topTag && topTag.value === target) {
-            const f = debounce(() => {
-              this.setState({...result.output, successfulInput: input});
-              CongratulatorySwal.fire({
-                title: <p>CONGRATULATIONS!</p>,
-                footer: `This looks like ${promptText(target, false)}!`,
-                html: <TensorView tensor={input}/>,
-                onClose: () => {
-                  this.setState(prevState => ({
-                    targetIndex: prevState.targetIndex + 1,
-                    successfulInput: null,
-                    valueByLabel: {},
-                    tags: [],
-                  }));
-                },
-              });
-            }, 500);
-            f();
+          if (topTag && topTag.value === target && this.mostRecentAward !== target) {
+            this.mostRecentAward = target;
+            this.setState({...result.output, successfulInput: input});
+            CongratulatorySwal.fire({
+              title: <p>CONGRATULATIONS!</p>,
+              footer: `This looks like ${promptText(target, false)}!`,
+              html: <TensorView tensor={input}/>,
+              onClose: () => {
+                this.setState(prevState => ({
+                  targetIndex: prevState.targetIndex + 1,
+                  successfulInput: null,
+                  valueByLabel: {},
+                  tags: [],
+                }));
+              },
+            });
           }
         }
       }

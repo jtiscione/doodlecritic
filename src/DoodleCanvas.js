@@ -24,6 +24,7 @@ class DoodleCanvas extends Component {
     this.onEraseMode = this.onEraseMode.bind(this);
     this.onClear = this.onClear.bind(this);
     this.onMouseUp = this.onMouseUp.bind(this);
+    this.onNext = this.onNext.bind(this);
   }
 
   componentDidMount() {
@@ -66,10 +67,12 @@ class DoodleCanvas extends Component {
 
   onDrawMode(_event) {
     this.eraseMode = false;
+    this.canvasRef.current.style.cursor = 'url(/pencil.cur), default';
   }
 
   onEraseMode(_event) {
     this.eraseMode = true;
+    this.canvasRef.current.style.cursor = 'url(/eraser.cur) 16 16, default';
   }
 
   onClear(_event) {
@@ -79,6 +82,7 @@ class DoodleCanvas extends Component {
     context.fillRect(0, 0, this.props.width, this.props.height);
     this.props.resetPaintData();
     this.eraseMode = false;
+    this.canvasRef.current.style.cursor = 'url(/pencil.cur), default';
   }
 
   onMouseUp(_evt) {
@@ -87,6 +91,12 @@ class DoodleCanvas extends Component {
       this.props.onPencilUp();
       this.props.sendPaintData(this.canvasRef.current);
     }
+  }
+
+  onNext(_evt) {
+    this.canvasRef.current.style.cursor = 'url(/pencil.cur), default';
+    this.eraseMode = false;
+    this.props.onNext();
   }
 
   paint(prevPos, currPos) {
@@ -98,8 +108,8 @@ class DoodleCanvas extends Component {
     this.ctx.strokeWidth = STROKE_WIDTH;
     if (this.eraseMode) {
       this.ctx.strokeStyle = BACKGROUND_COLOR;
-      this.ctx.lineWidth = 10 * STROKE_WIDTH;
-      this.ctx.strokeWidth = 10 * STROKE_WIDTH;
+      this.ctx.lineWidth = 3.6 * STROKE_WIDTH;
+      this.ctx.strokeWidth = 3.6 * STROKE_WIDTH;
     }
     this.ctx.beginPath();
     this.ctx.moveTo(x, y);
@@ -134,8 +144,8 @@ class DoodleCanvas extends Component {
           <button type="button" className="button" onClick={this.onDrawMode}>DRAW</button>
           <button type="button" className="button" onClick={this.onEraseMode}>ERASE</button>
           <button type="button" className="button" onClick={this.onClear}>CLEAR</button>
-          <div class="spacer" />
-          <button type="button" className="button" onClick={this.props.onNext}>SKIP</button>
+          <div className="spacer" />
+          <button type="button" className="button" onClick={this.onNext}>SKIP</button>
         </div>
       </div>
     );

@@ -82,6 +82,7 @@ div::-webkit-scrollbar-thumb {
         canvas {
           margin: 20px 20px 0 20px;
           box-shadow: 1px 1px 10px;
+          cursor: url(/pencil.cur), default;
         }
 
         .toolbar {
