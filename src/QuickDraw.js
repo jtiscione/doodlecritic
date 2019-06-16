@@ -37,7 +37,6 @@ class QuickDraw extends Component {
   pencilDown = false;
 
   state = {
-    readme: null,
     targetIndex: -1,
     shuffledLabels: [],
     valueByLabel: {},
@@ -70,23 +69,6 @@ class QuickDraw extends Component {
             .sort((a, b) => a.sort - b.sort)
             .map(a => a.value);
           this.setState({ shuffledLabels, targetIndex: 0 });
-        }
-      }).catch((e) => {
-        console.log(e);
-      });
-    }
-
-    if (!this.state.readme) {
-      console.log('Fetching README.md...');
-      fetch('/readme', { method: 'GET' }).then((response) => {
-        if (response.status !== 200) {
-          console.log(`/readme: HTTP status ${response.status}`);
-          return null;
-        }
-        return response.text();
-      }).then((result) => {
-        if (result) {
-          this.setState({ readme: result });
         }
       }).catch((e) => {
         console.log(e);
@@ -191,57 +173,75 @@ class QuickDraw extends Component {
 
     return (
       <div className="QuickDraw">
-        <header>
-          DOODLE CRITIC
-        </header>
-        <div className="main">
-          <DoodleCanvas
-            title={`Draw ${promptText(target, true)}.`}
-            target={target}
-            width={CANVAS_WIDTH}
-            height={CANVAS_HEIGHT}
-            sendPaintData={this.sendPaintData}
-            resetPaintData={this.resetPaintData}
-            onPencilDown={() => { this.pencilDown = true; }}
-            onPencilUp={() => { this.pencilDown = false; }}
-            onNext={ this.onNext }
-          />
-          <div className="feedback">
-            <div className="cloud-box">
-              <TagCloud
-                minSize={12}
-                maxSize={35}
-                tags={tags}
-                colorOptions={{
-                  luminosity: 'light',
-                  hue: 'orange',
-                }}
-                className="simple-cloud"
-              />
+        <div className="padding" />
+        <div className="documentation">
+          <article>
+            <p>
+            Draw something in the canvas, and a computer will describe what it's seeing!
+            </p>
+            <p>
+              In the <a href="https://quickdraw.withgoogle.com/">Google Quick Draw!</a> game,
+              you draw a doodle and a neural network tries to recognize it. It has collected doodles
+              from 15 million people.
+            </p>
+            <div className="pic">
+              <div className="bck"/>
             </div>
-            <div className="gauge-box">
-              <ReactSpeedometer
-                textColor="white"
-                needleColor="white"
-                startColor="gray"
-                endColor="red"
-                minValue={0}
-                maxValue={1}
-                segments={20}
-                maxSegmentLabels={5}
-                value={detectorValue}
-                valueFormat=".0%"
-              />
-            </div>
-            {target.toUpperCase()}
-            &nbsp;DETECTOR
-          </div>
-          <div className="documentation">
-            {
-              this.state.readme ? <Markdown source={this.state.readme} className="readme" /> : <div />
-            }
-          </div>
+            <p>
+              I downloaded 20 gigabytes of doodles and used them to train my own neural network on a PC
+              with an NVidia RTX 2060 card. After 12 hours of training it performs 73% as well as the one at Google.
+            </p>
+            <p>
+              Since this network has bad vision compared to theirs, there is no time limit here.
+              Just remember it was trained on doodles drawn in 20 seconds or less.
+            </p>
+            <p>
+              If you think you can do better, feel free to fork the project on <a href="https://github.com/jtiscione/doodlecritic">Github</a>.
+            </p>
+          </article>
         </div>
+        <DoodleCanvas
+          title={`Draw ${promptText(target, true)}.`}
+          target={target}
+          width={CANVAS_WIDTH}
+          height={CANVAS_HEIGHT}
+          sendPaintData={this.sendPaintData}
+          resetPaintData={this.resetPaintData}
+          onPencilDown={() => { this.pencilDown = true; }}
+          onPencilUp={() => { this.pencilDown = false; }}
+          onNext={ this.onNext }
+        />
+        <div className="feedback">
+          <div className="cloud-box">
+            <TagCloud
+              minSize={12}
+              maxSize={35}
+              tags={tags}
+              colorOptions={{
+                luminosity: 'light',
+                hue: 'orange',
+              }}
+              className="simple-cloud"
+            />
+          </div>
+          <div className="gauge-box">
+            <ReactSpeedometer
+              textColor="white"
+              needleColor="white"
+              startColor="gray"
+              endColor="red"
+              minValue={0}
+              maxValue={1}
+              segments={20}
+              maxSegmentLabels={5}
+              value={detectorValue}
+              valueFormat=".0%"
+            />
+          </div>
+          {target.toUpperCase()}
+          &nbsp;DETECTOR
+        </div>
+        <div className="padding" />
       </div>
     );
   }

@@ -14,9 +14,6 @@ Keep in mind that it has only seen doodles people have drawn in 20 seconds or le
 As soon as Google recognizes a doodle, they snatch the canvas away and move on to the next. Therefore your doodle 
 should look like it took you less than 20 seconds.
 
-This is a convolutional neural network with a conventional, vanilla design. If you think you can do better, 
-feel free to fork this project on [Github](https://github.com/jtiscione/doodlecritic).
-
 ***
 
 # PROJECT DETAILS

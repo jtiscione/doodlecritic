@@ -5,24 +5,31 @@ $button-border-color: #a12727;
 
 html, body {
   background-color: $background;
+  height: 100%;
 }
 
-div::-webkit-scrollbar {
+body::-webkit-scrollbar {
   background-color: rgba(0,0,0,0.4);
 }
 
-div::-webkit-scrollbar-thumb {
+body::-webkit-scrollbar-thumb {
   border-radius: 10px;
   -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
   background-color: $foreground;
 }
 
 .App {
-  text-align: center;
-  background-image: linear-gradient(steelblue, $background);
   color: white;
+  text-align: center;
   font-family: Ubuntu, Helvetica, Arial, "Lucida Grande", sans-serif;
-  padding: 10px;
+  padding: 0px;
+
+  header {
+    background-color: steelblue;
+    padding: 10px 10px 20px 10px;
+    border-bottom: 2px solid $foreground;
+    font-size: 24pt;
+  }
 
   a {
     color: orange;
@@ -31,15 +38,13 @@ div::-webkit-scrollbar-thumb {
     color: #e89757;
   }
 
-  .QuickDraw {
-    header {
-      padding-bottom: 10px;
-      border-bottom: 1px solid $foreground;
-      font-size: 20pt;
-    }
-    .prompt {
-    }
-    .main {
+  .main {
+
+    padding: 20px;
+    background-image: linear-gradient(steelblue, $background);
+
+    .QuickDraw {
+
       display: flex;
       justify-content: center;
 
@@ -48,46 +53,55 @@ div::-webkit-scrollbar-thumb {
         flex-direction: row;
       }
 
-      .documentation {
+      .padding {
         flex-grow: 1;
-        height: 200px;
+      }
+
+      .documentation {
+        line-height: 1.5em;
+        max-width: 600px;
+        margin: auto;
         @media (min-width: $breakpoint) {
-          height: 600px;
           padding-right: 5px;
+          margin: 15px;
         }
-        overflow-x: hidden;
-        overflow-y: scroll;
-        margin: 10px;
-        border-bottom: 1px solid $foreground;
-        // #border-right: 0;
         text-align: left;
-        @media (min-width: $breakpoint) {
-          border-bottom: 0;
-          // border-right: 0;
-        }
         article {
           text-align: left;
+          p {
+            margin: 8px 0px 8px 0px;
+          }
+        }
+        .banner {
+          background: url(https://quickdraw.withgoogle.com/static/svg/banner.svg) no-repeat 50% 0px;
+          height: 150px;
+
         }
 
-        .readme {
-          padding-right: 10px;
+        .pic {
+          background-color: lightgray;
+          width: 300px;
+          margin: auto;
+          .bck {
+            background: url(https://quickdraw.withgoogle.com/static/svg/hero.svg) no-repeat 50% -25px;
+            height: 150px;
+            overflow: hidden;
+          }
         }
       }
 
       .DoodleCanvas {
         .title {
           font-size: 20pt;
-          margin-top: 20px;
         }
         canvas {
-          margin: 20px 20px 0 20px;
+          margin: 5px 20px 0 20px;
           box-shadow: 1px 1px 10px;
           cursor: url(/pencil.cur), default;
         }
 
         .toolbar {
           width: 480px;
-          margin: 0 20px 20px 20px;
           margin: auto;
           display: flex;
           justify-content: center;
@@ -128,6 +142,7 @@ div::-webkit-scrollbar-thumb {
         margin: auto;
         display: flex;
         flex-direction: column;
+        text-align: center;
 
         .cloud-box {
           @media (min-width: $breakpoint) {
@@ -146,26 +161,33 @@ div::-webkit-scrollbar-thumb {
           height: 200px;
         }
       }
-      border-bottom: 1px solid $foreground;
     }
   }
 
-  footer {
+  .bottomLinks {
     display: flex;
+    margin: 10px;
 
     .leftEnd {
-      padding: 15px;
+      padding-left: 15px;
       font-size: 14pt;
     }
 
     .center {
       flex-grow: 1;
-      padding: 15px;
       text-align: center;
     }
 
     .rightEnd {
-      padding: 15px;
+      padding-right: 15px;
+    }
+  }
+
+  .cellar {
+    margin: 10px;
+    .readme {
+      padding: 10px;
+      text-align: left;
     }
   }
 }

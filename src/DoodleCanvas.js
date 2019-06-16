@@ -145,6 +145,12 @@ class DoodleCanvas extends Component {
           <button type="button" className="button" onClick={this.onEraseMode}>ERASE</button>
           <button type="button" className="button" onClick={this.onClear}>CLEAR</button>
           <div className="spacer" />
+          <button type="button" className="button" onClick={
+            () => window.open(
+              `https://quickdraw.withgoogle.com/data/${this.props.target.replace(' ', '_')}`,
+              'hint')}>
+            HINT
+          </button>
           <button type="button" className="button" onClick={this.onNext}>SKIP</button>
         </div>
       </div>
