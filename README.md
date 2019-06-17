@@ -1,44 +1,54 @@
 # Doodle Critic
+
 #### GET IMMEDIATE AI FEEDBACK ON YOUR ART.
 
 Draw something in the canvas, and a neural network will guess what it is!
 
-It has been trained using Google's [The Quick, Draw! Dataset](https://quickdraw.withgoogle.com/data), a data set of
-50 million doodles separated into 343 classes. Google uses a recurrent neural network that pays attention to the order 
-and timing of your strokes as you draw. This one has a simpler design that only looks at the image.
+This is a two-part project. It contains a script `train.py` that uses Pytorch to train a convolutional neural network to
+classify doodles. For training data it scans files from Google's [The Quick, Draw! Dataset](https://quickdraw.withgoogle.com/data),
+a data set of 50 million doodles separated into 343 classes. It generates two files: `doodles.onnx` and `labels.txt`.
 
-Try to be patient with its poor vision; it's only 70% as accurate as Google's. They have server farms and I have an 
-RTX 2060 card with 6 GB. So you will have to draw carefully for it. In many cases I have no clue what this thing is looking for.
- 
-Keep in mind that it has only seen doodles people have drawn in 20 seconds or less, and most people can't draw.
-As soon as Google recognizes a doodle, they snatch the canvas away and move on to the next. Therefore your doodle 
-should look like it took you less than 20 seconds.
+It also contains a NodeJS / React single page web app that presents the user with a canvas to draw on.
+The webapp loads the model in ONNX format and thereafter uses onnx.js to classify black-and-white 64x64 images uploaded
+by clients. Responses are displayed in the UI as a tag cloud and a meter indicating the activation of a single output neuron.
 
-***
+If `doodles.onnx` (or `labels.txt`) is not present on disk, the server will download copies that I left in an S3 bucket.
+
+Google uses a recurrent neural network that pays attention to the order and timing of your strokes as you draw.
+This one is much simpler and only looks at static images. Its size was constrained by the limited memory on the GPU.
+However, the model I left on S3 agrees with Google's 73% of the time, which is not bad considering they have server farms 
+and I have an RTX 2060 card with 6 GB. Still, with a lot of categories, I have no clue what this thing is looking for.
 
 # PROJECT DETAILS
 
-### PYTHON STUFF (training phase)
+***
+
+## PYTHON STUFF (training phase)
 
 You can use the Python script `train.py` to create your own network, possibly with a different design.
 
-This Python script will train a neural network and write the model files to the project folder.
- 
-Using it to train a network using Google's data set will require a GPU, a full day, and several kilowatt hours.
-(A CPU will take a week.)
+This script will use Pytorch to train a network with two convolutional layers and three fully connected layers:
+
+![CNN model]
+(/cnn.jpeg)
+
+Running it on Google's entire downloadable data set will require a GPU, the better part of a day, and several kilowatt hours.
+(I don't know how long it takes with just a CPU.)
 
 You will need to download about 20 GB of data from Google, specifically the ["simplified drawing files](https://github.com/googlecreativelab/quickdraw-dataset).
-You can download them from Google Cloud Storage or from [Kaggle](https://www.kaggle.com/google/tinyquickdraw).
+You can download them from Google Cloud Storage or from [Kaggle](https://www.kaggle.com/google/tinyquickdraw) which is
+where I got mine.
 
 By default, `train.py` will look for Google's data files within a `data/quickdraw` directory in your home folder. 
-If you put them somewhere else, supply the path as a command line argument.
+If you put them somewhere else, supply the path as a command line argument. It will write `doodles.onnx` and `labels.txt`
+to the project folder.
 
-Install Python on your system, then install numpy, PIL (Python Image Library), and Pytorch, using `pip install`.
+Installation requirements include numpy, PIL (Python Image Library), and Pytorch (all installable using `pip install`).
 
-If you're running Linux on a system with an RTX card you can install [NVidia's CUDA Toolkit](https://developer.nvidia.com/cuda-downloads),
+If you're running Linux on a system with an RTX card, you can also install [NVidia's CUDA Toolkit](https://developer.nvidia.com/cuda-downloads),
 and follow their instructions for installing their [Automatic Mixed Precision libary](https://nvidia.github.io/apex/amp.html)
-which is a Pytorch extension for performing float-16 arithmetic on the GPU using NVidia's Tensor Cores. If you do this, 
-then initialize `MIXED_PRECISION` to `True` in `train.py`. This will cut down on training time and tight memory constraints.
+which is a Pytorch extension for performing float-16 arithmetic on the GPU using NVidia's tensor cores. If you do this, 
+then initialize `MIXED_PRECISION` to `True` in `train.py`. This will cut down on training time and loosen memory constraints.
 
 Once trained, the network can discriminate among 344 different classes (including a"nothing" channel
 with all-zero samples). If you're not interested in discriminating among that many classes,
@@ -46,12 +56,13 @@ remove their data files before starting the training script.
 
 While the script is running, deleting `doodles.onnx` (or `doodles.pth`) will trigger a replacement with fresh versions.
 This way you can see how the network is behaving at various phases of training by periodically deleting the existing
-`doodles.onnx` and running the JavaScript webapp using the new version that appears.
+`doodles.onnx` and restarting the JavaScript webapp with the new version that appears.
 
-### JAVASCRIPT STUFF (deployment phase)
+***
 
-Unlike training, deploying a neural network requires little computing power. A Raspberry Pi can handle it easily.
-The network is deployed as a Node.js webapp, using Express on the server and React on the client.
+## JAVASCRIPT STUFF (deployment phase)
+
+The network is deployed on a Node.js webapp, using Express on the server and React on the client.
 
 In general, neural networks can be downloaded in ONNX format and run in the client's browser, but not this one-
 `doodles.onnx` is 300 MB and must stay on the server. Upon startup the server will load the file 
@@ -62,34 +73,48 @@ If you start the server without `doodles.onnx` present, it will download a copy 
 A much smaller file (`labels.txt`) will also be downloaded from S3 if it is not present. In general these two
 files are a matched set generated by the Python training script. Both are included in `.gitignore`.
 
-### Available Scripts
+### Running the webapp:
+
+Clone the repository, then run `npm install`, `npm run build`, and `npm start`. The app will listen on port 8000.
+
+
+#### Available Scripts
 
 In the project directory, you can run:
 
-#### `npm run build`
+##### `npm run build`
 
 Builds the app for production to the `build` folder.
 
 It correctly bundles React in production mode and optimizes the build for the best performance.
 The app is now ready to be deployed using `npm start`.
 
-#### `npm run clean`
+##### `npm run clean`
 
 Blows away the `build` folder.
 
-#### `npm start`
+##### `npm start`
 
 Starts the Express server listening on port 8000. (This basically means running `node ./server.js`.)
 
-If `npm run build` has been executed, a build folder will be found, and its contents will be served as static files.
+If `npm run build` has been executed, the build folder will be found, and its contents will be served as static files.
 Otherwise the server will warn you that you need to run the `webpack-dev-server` script.
 
-
-#### `npm run webpack-dev-server`.
+##### `npm run webpack-dev-server`.
 
 Runs the app in development mode (for React development). This needs to be run alongside `npm start` and after `npm run clean`.
-The app will then be visible on port 3000. The page will reload if you make edits.
+The app will then be visible on port 3000. Pages will reload whenever you make edits.
 
-#### `npm run eject`
+##### `npm run eject`
 
 This is a one-way, irreversible operation. Run this if you like dealing with Webpack files.
+
+
+# CONTRIBUTING
+
+Contributions are welcome. If you have a nicer video card with more available memory, or a better idea for the network structure
+(e.g. size and number of convolutional or hidden layers, etc.) you can edit `train.py` and use it to generate your own
+ONNX file that will perform better than the one I left on S3. If you do then please let me know.
+
+The webapp can be adapted for doodling into any type of image classifier (e.g. MNIST), as long as the model is in
+ONNX format and accepts inputs as 1x64x64 images.
