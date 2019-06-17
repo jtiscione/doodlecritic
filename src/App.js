@@ -37,10 +37,10 @@ function App() {
       </div>
       <div className="bottomLinks">
         <div className="leftEnd">Jason Tiscione</div>
-        <div className="center"><a href="#cellar" onClick={(_e)=>{ setShowReadme(!showReadme) }}>README.md</a></div>
+        <div className="center"><a href="#readme" onClick={(_e)=>{ setShowReadme(!showReadme) }}>README.md</a></div>
         <div className="rightEnd"><a target="_blank" href="http://github.com/jtiscione/doodlecritic">Github repository</a></div>
       </div>
-      <div className="cellar" id="cellar">
+      <div className="cellar" id="readme">
         {
           (readme !== null && showReadme) ? <Markdown source={readme} className="readme" /> : <div />
         }
