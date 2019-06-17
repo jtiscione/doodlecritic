@@ -156,13 +156,13 @@ class DoodleCanvas extends Component {
   render() {
     return (
       <div className="DoodleCanvas">
-        <div className="title">CHALLENGE: Draw <a
+        <div className="title">CHALLENGE: Draw {this.props.article}<a
           href="#"
           title={`See what people draw for ${this.props.target}`}
           onClick={
           () => window.open(
             `https://quickdraw.withgoogle.com/data/${this.props.target.replace(/ /g, '_')}`,
-            '_blank')}>{this.props.title}</a></div>
+            '_blank')}>{this.props.target.toUpperCase()}</a>.</div>
         <canvas
           width={this.props.width}
           height={this.props.height}
@@ -185,12 +185,10 @@ class DoodleCanvas extends Component {
       </div>
     );
   }
-
-
 }
 
 DoodleCanvas.propTypes = {
-  title: PropTypes.string.isRequired,
+  article: PropTypes.string.isRequired,
   target: PropTypes.string.isRequired,
   width: PropTypes.number.isRequired,
   height: PropTypes.number.isRequired,

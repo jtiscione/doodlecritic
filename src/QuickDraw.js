@@ -5,7 +5,6 @@ import { TagCloud } from 'react-tagcloud';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 
-import debounce from 'lodash.debounce';
 import throttle from 'lodash.throttle';
 
 import DoodleCanvas from './DoodleCanvas';
@@ -18,16 +17,15 @@ const CANVAS_HEIGHT = 480;
 const INPUT_WIDTH = 64;
 const INPUT_HEIGHT = 64;
 
-const promptText = (tgt, toUpperCase) => {
-  if (tgt) {
-    const label = toUpperCase ? tgt.toUpperCase() : tgt;
-    if (tgt.match(/s$/) || tgt.match(/^The\s/)) {
-      return label;
+const article = (noun) => {
+  if (noun) {
+    if (noun.match(/s$/) || noun.match(/^The\s/)) {
+      return '';
     }
-    if (tgt.match(/^[aeiou]/)) {
-      return `an ${label}`;
+    if (noun.match(/^[aeiou]/)) {
+      return 'an ';
     }
-    return `a ${label}`;
+    return 'a ';
   }
   return '';
 };
@@ -149,7 +147,7 @@ class QuickDraw extends Component {
             this.setState({...result.output, successfulInput: input});
             CongratulatorySwal.fire({
               title: <p>CONGRATULATIONS!</p>,
-              footer: `Looks like ${promptText(target, false)} to me!`,
+              footer: `Looks like ${article(target)}${target} to me!`,
               html: <TensorView tensor={input}/>,
               onClose: () => {
                 this.setState(prevState => ({
@@ -198,7 +196,7 @@ class QuickDraw extends Component {
             <p>
               I downloaded 20 gigabytes of doodles and used them to train my own neural network,
               on a PC with a budget NVidia RTX 2060 card. After 12 hours of training it agrees with
-              Google's network 73% of the time.
+              Google 73% of the time.
             </p>
             <p>
               There is no time limit here, so you can explore its weird reactions to changes in
@@ -211,7 +209,7 @@ class QuickDraw extends Component {
           </article>
         </div>
         <DoodleCanvas
-          title={promptText(target, true)}
+          article={article(target)}
           target={target}
           width={CANVAS_WIDTH}
           height={CANVAS_HEIGHT}
