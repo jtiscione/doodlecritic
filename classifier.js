@@ -113,9 +113,9 @@ module.exports = {
       return acc;
     }, {});
 
-    console.log(`Classifier result: ${sortedLabels[0]}`);
     const returnValue = { valueByLabel: sortedValueByLabel, tags };
     if (DEBUG) {
+      console.log(`Classifier result: ${sortedLabels[0]}`);
       console.dir(returnValue);
     }
     return returnValue;

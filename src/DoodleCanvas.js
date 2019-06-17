@@ -20,10 +20,12 @@ class DoodleCanvas extends Component {
     this.canvasRef = React.createRef();
     this.onMouseDown = this.onMouseDown.bind(this);
     this.onMouseMove = this.onMouseMove.bind(this);
+    this.onMouseUp = this.onMouseUp.bind(this);
+    this.onTouchStart = this.onTouchStart.bind(this);
+    this.onTouchMove = this.onTouchMove.bind(this);
     this.onDrawMode = this.onDrawMode.bind(this);
     this.onEraseMode = this.onEraseMode.bind(this);
     this.onClear = this.onClear.bind(this);
-    this.onMouseUp = this.onMouseUp.bind(this);
     this.onNext = this.onNext.bind(this);
   }
 
@@ -50,18 +52,42 @@ class DoodleCanvas extends Component {
 
   onMouseDown(event) {
     event.preventDefault();
-   const { offsetX, offsetY } = this.mousePosition(event);
     this.pencilDown = true;
-    this.prevPos = { offsetX, offsetY };
     this.props.onPencilDown();
+    const { offsetX, offsetY } = this.mousePosition(event);
+    this.prevPos = { offsetX, offsetY };
     this.paint(this.prevPos, this.prevPos);
   }
 
+  onTouchStart(event) {
+    event.preventDefault();
+    this.pencilDown = true;
+    this.props.onPencilDown();
+    event.targetTouches.forEach((touch, i) => {
+      const { offsetX, offsetY } = this.mousePosition(touch);
+      if (i === 0) {
+        this.prevPos = { offsetX, offsetY };
+      }
+      this.paint(this.prevPos, { offsetX, offsetY });
+    });
+  }
+
   onMouseMove(event) {
+    event.preventDefault();
     if (this.pencilDown) {
       const { offsetX, offsetY } = this.mousePosition(event);
       const offsetData = { offsetX, offsetY };
       this.paint(this.prevPos, offsetData);
+    }
+  }
+
+  onTouchMove(event) {
+    event.preventDefault();
+    if (this.pencilDown) {
+      event.targetTouches.forEach((touch) => {
+        const { offsetX, offsetY } = this.mousePosition(touch);
+        this.paint(this.prevPos, { offsetX, offsetY });
+      });
     }
   }
 
@@ -145,6 +171,9 @@ class DoodleCanvas extends Component {
           onMouseLeave={this.onMouseUp}
           onMouseUp={this.onMouseUp}
           onMouseMove={this.onMouseMove}
+          onTouchStart={this.onTouchStart}
+          onTouchMove={this.onTouchMove}
+          onTouchUp={this.onMouseUp}
         />
         <div className="toolbar">
           <button type="button" className="button" onClick={this.onDrawMode}>DRAW</button>
