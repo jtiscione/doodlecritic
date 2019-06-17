@@ -30,7 +30,7 @@ You can use the Python script `train.py` to create your own network, possibly wi
 This script will use Pytorch to train a network with two convolutional layers and three fully connected layers:
 
 ![CNN model]
-(/cnn.jpeg)
+(https://cdn-media-1.freecodecamp.org/images/dobVrh3SGyqQraM2ogi-P3VK2K-LFsBm7RLO)
 
 Running it on Google's entire downloadable data set will require a GPU, the better part of a day, and several kilowatt hours.
 (I don't know how long it takes with just a CPU.)
