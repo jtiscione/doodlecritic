@@ -109,6 +109,7 @@ html, body {
           margin: 5px 20px 0 20px;
           box-shadow: 1px 1px 10px;
           cursor: url(/pencil.cur), default;
+          touch-action: none;
         }
 
         .toolbar {
