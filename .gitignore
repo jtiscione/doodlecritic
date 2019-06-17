@@ -1,31 +1,10 @@
-# See https://help.github.com/ignore-files/ for more about ignoring files.
-
-
-# Project specific stuff #
-##############################
 labels.txt
-cnn_model.onnx
-dist/
-logs/
+*.pth
+*.onnx
+*.pkl
 node_modules/
-
-# IntelliJ junk #
-#################
 .idea/
-
-# dependencies
 /node_modules
-
-# Logs and databases #
-######################
-*.log
-*.sql
-*.sqlite
-*.sqlite3
-*.db
-
-# OS generated files #
-######################
 .DS_Store
 .DS_Store?
 ._*

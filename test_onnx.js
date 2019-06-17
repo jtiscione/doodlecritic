@@ -15,7 +15,7 @@ async function main() {
     .split('\n')
     .filter(e => e); // trim empty string
 
-  await session.loadModel('./cnn_model.onnx');
+  await session.loadModel('./doodles.onnx');
 
   // Present it with a random image
   // Dimension 1 is batch dimension (number of images), here we only have one

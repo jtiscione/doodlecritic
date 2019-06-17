@@ -29,6 +29,7 @@ function App() {
   return (
     <div className="App">
       <header>
+        <img src="/icon.png" />
         DOODLE CRITIC
       </header>
       <div className="main">
@@ -36,10 +37,10 @@ function App() {
       </div>
       <div className="bottomLinks">
         <div className="leftEnd">Jason Tiscione</div>
-        <div className="center"><a href="#" onClick={(_e)=>{ setShowReadme(!showReadme) }}>README.md</a></div>
-        <div className="rightEnd"><a href="http://github.com/jtiscione/doodlecritic">Github repository</a></div>
+        <div className="center"><a href="#cellar" onClick={(_e)=>{ setShowReadme(!showReadme) }}>README.md</a></div>
+        <div className="rightEnd"><a target="_blank" href="http://github.com/jtiscione/doodlecritic">Github repository</a></div>
       </div>
-      <div className="cellar">
+      <div className="cellar" id="cellar">
         {
           (readme !== null && showReadme) ? <Markdown source={readme} className="readme" /> : <div />
         }

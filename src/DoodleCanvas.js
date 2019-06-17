@@ -130,7 +130,13 @@ class DoodleCanvas extends Component {
   render() {
     return (
       <div className="DoodleCanvas">
-        <div className="title">{this.props.title}</div>
+        <div className="title">CHALLENGE: Draw <a
+          href="#"
+          title={`See what people draw for ${this.props.target}`}
+          onClick={
+          () => window.open(
+            `https://quickdraw.withgoogle.com/data/${this.props.target.replace(/ /g, '_')}`,
+            '_blank')}>{this.props.title}</a></div>
         <canvas
           width={this.props.width}
           height={this.props.height}
@@ -145,12 +151,6 @@ class DoodleCanvas extends Component {
           <button type="button" className="button" onClick={this.onEraseMode}>ERASE</button>
           <button type="button" className="button" onClick={this.onClear}>CLEAR</button>
           <div className="spacer" />
-          <button type="button" className="button" onClick={
-            () => window.open(
-              `https://quickdraw.withgoogle.com/data/${this.props.target.replace(' ', '_')}`,
-              'hint')}>
-            HINT
-          </button>
           <button type="button" className="button" onClick={this.onNext}>SKIP</button>
         </div>
       </div>

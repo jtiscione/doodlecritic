@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 
-import Markdown from 'react-markdown';
 import ReactSpeedometer from 'react-d3-speedometer';
 import { TagCloud } from 'react-tagcloud';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 
+import debounce from 'lodash.debounce';
 import throttle from 'lodash.throttle';
 
 import DoodleCanvas from './DoodleCanvas';
@@ -118,13 +118,21 @@ class QuickDraw extends Component {
         // Heroku dyno asleep...
         this.error503Count++;
         if (this.error503Count === 3) {
-          // Schedule reload for 1 sec
-          setTimeout(() => {
-            if (this.error503Count > 0) {
-              // Nothing changed
-              window.reload();
+          this.error503Count = 0;
+          Swal.fire({
+            title: '503 Error: Server not ready.',
+            text: "(It probably just woke up and is restarting.)",
+            type: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Reload Page',
+            cancelButtonText: 'Ignore'
+          }).then((result) => {
+            if (result.value) {
+              window.location.reload();
             }
-          }, 1000);
+          });
         }
       }
       console.log(`/paint: HTTP status ${response.status}`);
@@ -141,7 +149,7 @@ class QuickDraw extends Component {
             this.setState({...result.output, successfulInput: input});
             CongratulatorySwal.fire({
               title: <p>CONGRATULATIONS!</p>,
-              footer: `This looks like ${promptText(target, false)}!`,
+              footer: `Looks like ${promptText(target, false)} to me!`,
               html: <TensorView tensor={input}/>,
               onClose: () => {
                 this.setState(prevState => ({
@@ -177,31 +185,33 @@ class QuickDraw extends Component {
         <div className="documentation">
           <article>
             <p>
-            Draw something in the canvas, and a computer will describe what it's seeing!
+            Draw something in the canvas, and a neural network will describe what it's seeing!
             </p>
             <p>
-              In the <a href="https://quickdraw.withgoogle.com/">Google Quick Draw!</a> game,
-              you draw a doodle and a neural network tries to recognize it. It has collected doodles
-              from 15 million people.
+              <a href="https://quickdraw.withgoogle.com/">Google Quick Draw!</a> is an online game
+              where you draw a doodle and their neural network tries to recognize it. Google has
+              collected doodles from 15 million people.
             </p>
             <div className="pic">
               <div className="bck"/>
             </div>
             <p>
-              I downloaded 20 gigabytes of doodles and used them to train my own neural network on a PC
-              with an NVidia RTX 2060 card. After 12 hours of training it performs 73% as well as the one at Google.
+              I downloaded 20 gigabytes of doodles and used them to train my own neural network,
+              on a PC with a budget NVidia RTX 2060 card. After 12 hours of training it agrees with
+              Google's network 73% of the time.
             </p>
             <p>
-              Since this network has bad vision compared to theirs, there is no time limit here.
-              Just remember it was trained on doodles drawn in 20 seconds or less.
+              There is no time limit here, so you can explore its weird reactions to changes in
+              the image at your leisure, and get some insights into what it's looking for.
             </p>
             <p>
-              If you think you can do better, feel free to fork the project on <a href="https://github.com/jtiscione/doodlecritic">Github</a>.
+              This project can be used with other convolutional neural networks, if you have one you'd like to try.
+              See the <a target="blank" href="http://github.com/jtiscione/doodlecritic">repository</a> for details.
             </p>
           </article>
         </div>
         <DoodleCanvas
-          title={`Draw ${promptText(target, true)}.`}
+          title={promptText(target, true)}
           target={target}
           width={CANVAS_WIDTH}
           height={CANVAS_HEIGHT}

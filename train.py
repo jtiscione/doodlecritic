@@ -16,38 +16,60 @@ import numpy as np
 # Training script- trains a Pytorch model against the Google Quickdraw dataset:
 # https://github.com/googlecreativelab/quickdraw-dataset
 #
-# This script uses the "simplified Drawing files" available at
+# Specifically, it uses the "simplified Drawing files":
 #
 # https://console.cloud.google.com/storage/browser/quickdraw_dataset/full/simplified
 #
-# Also see https://www.kaggle.com/google/tinyquickdraw for a single downloadable tar file with about 50 million samples
-# separated into 343 classes.
+# Also see https://www.kaggle.com/google/tinyquickdraw for a single downloadable tar file
+# with about 50 million samples separated into 343 classes, which is where I got mine.
 #
-# Model used here is a convolutional neural network accepting 1x64x64 inputs
+# It expects those files to be in ~/data/quickdraw. Specify any alternate path on the command line.
+# 
+# As output it generates two files: doodles.pth (internal format) and doodles.onnx (ONNX export format).
+#
+# The model used here is a convolutional neural network accepting 1x64x64 inputs
 # (i.e. black-and-white 64x64 images). Output is 344 neurons (i.e. one per label) with an extra neuron
 # corresponding to label "nothing".
-#
-# If cnn_model.pth is found (typically saved from a previous run), it will be loaded into the current model;
-# otherwise the network will start with a set of random weights. File size is approx. 300 MB.
-#
-# While this is running, the model will be periodically saved as cnn_model.pth (and exported to cnn_model.onnx)
-# at the end of each training epoch, and also whenever those files are found to be missing.
-# (To get the up-to-date versions of these files, delete the current ones while the script is running.)
+# 
+# NOTES:
+# 
+# If doodles.pth is found (typically saved from a previous run), it will be loaded into the
+# current model; otherwise it will start with a set of random weights. File size is approx. 300 MB.
+# 
+# If it finds at any point during training that the output files doodles.pth or doodles.onnx
+# are not on the drive, it will write new copies immediately with its current state (even though
+# this means the first versions will only contain random weights). Deleting the files
+# generates fresh copies, and so does finishing a training epoch (overwriting the prior versions).
+# Because the data set is so immense, each epoch takes several hours to complete.
+# In practice, with this model, performance levels off after about 3-4 epochs, with the network
+# agreeing with Google's classification about 73% of the time.
+# 
+# This way, if you need to edit a hyperparameter or go to work, you can pause execution by
+# deleting the current doodles.pth and doodles.onnx files, letting it write new ones,
+# and then hitting Ctrl-C. Typically you will want to adjust the learning rate downward
+# or experiment with a different optimizer after the script has run for a few hours and
+# its performance has reached a plateau. After you make your edits the script will pick up
+# where it left off.
 #
 # If SAVE_BACKUP_FILES is set to True, the script will save backups as training progresses.
-# Each time performance reaches a new record, a file will be saved with a number in the filename
-# indicating the new record number of correct responses. This is to avoid losing progress if the script crashes.
+# Each time performance reaches a new record, a file will be saved with a filename indicating the
+# new record number of correct responses. This is to avoid losing progress if the script crashes.
 # (Raising the batch size too high can cause spurious out-of-memory errors at random times.)
 
-# Specify data folder as command line argument; default is ~/data/quickdraw
-DATA_DIRECTORY = expanduser('~/data/quickdraw')
-if (len(sys.argv) > 1):
-    DATA_DIRECTORY = sys.argv[1]
 
+# Specify data folder as command line argument; default is ~/data/quickdraw
+DATA_DIRECTORY = '~/data/quickdraw'
+if len(sys.argv) > 1:
+    DATA_DIRECTORY = sys.argv[1]
+if DATA_DIRECTORY[0] == '~':
+    DATA_DIRECTORY = expanduser(DATA_DIRECTORY)
+
+# Standard industry practice: Jack this number up as high as you can, then carefully lower it
+# until the script stops crashing. Final value is dependent on GPU memory.
 # This is a safe batch size to use on an RTX 2060 with 6 GB.
 BATCH_SIZE = 1000
 
-# Hyperparameters
+# Hyperparameters; both SGD and Adam work well, at least in the beginning; use SGD by default
 OPTIMIZER_NAME = 'SGD'
 
 SGD_LEARNING_RATE = 0.01
@@ -60,30 +82,34 @@ ADAM_EPSILON = 0.0001
 INDEX_CACHE_FILE = './index_cache.pkl'
 LABELS_FILE = './labels.txt'
 
-STATE_DICT_FILE = './cnn_model.pth'
-ONNX_FILE = './cnn_model.onnx'
+STATE_DICT_FILE = './doodles.pth'
+ONNX_FILE = './doodles.onnx'
 
 SAVE_BACKUP_FILES = True
-NUMBERED_STATE_DICT_FILE_TEMPLATE = './cnn_model_{}.pth'
+NUMBERED_STATE_DICT_FILE_TEMPLATE = './doodles_{}_of_{}.pth'
+NUMBERED_ONNX_FILE_TEMPLATE = './doodles_{}_of_{}.onnx'
 
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-# If it's installed, turn this on to enable NVidia's AMP Pytorch extension on an RTX card
-# Compiling and installing it involves NVidia's CUDA Toolkit to be installed on the system so I will default to False
+# If it's installed, turn this on to enable NVidia's Apex AMP Pytorch extension.
+# This will let us do calculations in FP16 on the GPU which will save memory on the card
+# and let us raise the batch size. It will also leverage RTX tensor cores on RTX cards.
+# Default is set to False, because compiling and installing AMP is an involved process-
+# NVidia's CUDA Toolkit to be installed on your system before you can compile it using pip.
+
 MIXED_PRECISION = False
 
 if MIXED_PRECISION and torch.cuda.is_available():
-    # See if NVidia's Apex AMP Pytorch extension has been installed to leverage RTX tensor cores
-    # by performing FP16 calculations; otherwise stick to standard FP32.
+    # See if the AMP Pytorch extension has been installed; otherwise stick to standard FP32.
     # If we are using mixed precision we can raise the batch size but keep it a multiple of 8.
+    # All tensor dimensions must be multiples of 8 to trigger NVidia's tensor core optimizations.
     try:
         from apex import amp, optimizers
         MIXED_PRECISION = True
-        BATCH_SIZE = int(BATCH_SIZE * 1.6)
+        BATCH_SIZE = int(BATCH_SIZE * 1.6) # Raising it by 60%
         print('Using mixed precision.')
     except ImportError:
         MIXED_PRECISION = False
-
 
 # This is a torch DataSet implementation that makes the following assumptions:
 #
@@ -167,7 +193,7 @@ class QuickDrawDataset(torch.utils.data.Dataset):
 
         # Alter image slightly to look like the inputs we're eventually going to get from the client.
         # This is a limitation imposed by JavaScript which implements "antialiasing" on downsized canvases by
-        # nearest-neighbor downsampling smoothed onscreen by a WebGL filter that doesn't write to the image data,
+        # nearest-neighbor downsampling, smoothed onscreen by a WebGL filter that looks nice but doesn't alter the image data,
         # so we only get two-color jagged images.
         #
         # Tedious workarounds are possible: https://stackoverflow.com/questions/2303690/resizing-an-image-in-an-html5-canvas
@@ -242,7 +268,7 @@ if __name__ == '__main__':
     model = CNNModel(input_size=64, num_classes=len(dataSet.labelList)).to(DEVICE)
 
     if (os.path.isfile(STATE_DICT_FILE)):
-        # We found an existing cnn_model.pth file! Instead of starting from scratch we'll load this one.
+        # We found an existing doodles.pth file! Instead of starting from scratch we'll load this one.
         # and continue training it.
         print("Loading {}".format(STATE_DICT_FILE))
         state_dict = torch.load(STATE_DICT_FILE)
@@ -309,13 +335,29 @@ if __name__ == '__main__':
                 record_rolling_average = max(rolling_average, record_rolling_average)
             else:
                 if (rolling_average > record_rolling_average):
-                    # Save model with a munged filename; e.g. cnn_model_706.pth
+                    # Save model with a munged filename; e.g. doodles_706.pth
                     if (SAVE_BACKUP_FILES):
-                        torch.save(model.state_dict(), NUMBERED_STATE_DICT_FILE_TEMPLATE.format(rolling_average))
-                        print('Saved model file (ROLLING AVG: {})'.format(rolling_average))
-                        # Delete the last backup we wrote to avoid filling up the drive with 300 MB files
+                        backupPth = NUMBERED_STATE_DICT_FILE_TEMPLATE.format(rolling_average, BATCH_SIZE)
+                        torch.save(model.state_dict(), backupPth)
+                        print('Saved model file {}'.format(backupPth))
+                        # Delete the last backup .pth file we wrote to avoid filling up the drive
                         if (record_rolling_average > 0):
-                            old_file = NUMBERED_STATE_DICT_FILE_TEMPLATE.format(record_rolling_average)
+                            old_file = NUMBERED_STATE_DICT_FILE_TEMPLATE.format(record_rolling_average, BATCH_SIZE)
+                            if os.path.exists(old_file):
+                                os.remove(old_file)
+                        # Same for ONNX
+                        backupOnnx = NUMBERED_ONNX_FILE_TEMPLATE.format(rolling_average, BATCH_SIZE)
+                        if MIXED_PRECISION:
+                            with amp.disable_casts():
+                                dummy_input = torch.randn(1, 1, 64, 64).to(DEVICE)
+                                torch.onnx.export(model, dummy_input, backupOnnx, verbose=False)
+                        else:
+                            dummy_input = torch.randn(1, 1, 64, 64).to(DEVICE)
+                            torch.onnx.export(model, dummy_input, backupOnnx, verbose=False)
+                        print('Saved ONNX file {}'.format(backupOnnx))
+                        # Delete the last backup ONNX file we wrote to avoid filling up the drive
+                        if (record_rolling_average > 0):
+                            old_file = NUMBERED_ONNX_FILE_TEMPLATE.format(record_rolling_average, BATCH_SIZE)
                             if os.path.exists(old_file):
                                 os.remove(old_file)
                     record_rolling_average = rolling_average
@@ -329,15 +371,15 @@ if __name__ == '__main__':
                 if MIXED_PRECISION:
                     with amp.disable_casts():
                         dummy_input = torch.randn(1, 1, 64, 64).to(DEVICE)
-                        torch.onnx.export(model, dummy_input, ONNX_FILE, verbose=True)
+                        torch.onnx.export(model, dummy_input, ONNX_FILE, verbose=False)
                 else:
                     dummy_input = torch.randn(1, 1, 64, 64).to(DEVICE)
-                    torch.onnx.export(model, dummy_input, ONNX_FILE, verbose=True)
+                    torch.onnx.export(model, dummy_input, ONNX_FILE, verbose=False)
                 print('Exported ONNX file {}'.format(ONNX_FILE))
         # Epoch finished
         # Save the current model at the end of an epoch
         torch.save(model.state_dict(), STATE_DICT_FILE)
-        # Export ONNX
+        # Export ONNX with loudmouth flag set
         if (MIXED_PRECISION):
             with amp.disable_casts():
                 dummy_input = torch.randn(1, 1, 64, 64).to(DEVICE)
@@ -345,4 +387,4 @@ if __name__ == '__main__':
         else:
             dummy_input = torch.randn(1, 1, 64, 64).to(DEVICE)
             torch.onnx.export(model, dummy_input, ONNX_FILE, verbose=True)
-        print('EPOCH {} FINISHED, SAVED MODEL FILES'.format(epoch))
+        print('EPOCH {} FINISHED, SAVED {} AND {}'.format(epoch, STATE_DICT_FILE, ONNX_FILE))

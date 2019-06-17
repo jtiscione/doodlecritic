@@ -9,7 +9,7 @@ const { Tensor, InferenceSession } = onnx;
 
 const DEBUG = false;
 
-const ONNX_FILE = 'cnn_model.onnx';
+const ONNX_FILE = 'doodles.onnx';
 const LABELS_FILE = 'labels.txt';
 
 const S3_BUCKET = 'https://onnx.s3-us-west-2.amazonaws.com';
