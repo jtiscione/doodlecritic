@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities,react/jsx-one-expression-per-line */
 import React, { Component } from 'react';
 
 import ReactSpeedometer from 'react-d3-speedometer';
@@ -39,10 +40,10 @@ class QuickDraw extends Component {
     shuffledLabels: [],
     valueByLabel: {},
     tags: [],
-    successfulInput: null,
   };
 
   error503Count = 0;
+
   mostRecentAward = null;
 
   constructor(props) {
@@ -119,13 +120,13 @@ class QuickDraw extends Component {
           this.error503Count = 0;
           Swal.fire({
             title: '503 Error: Server not ready.',
-            text: "(It probably just woke up and is restarting.)",
+            text: '(It probably just restarted.)',
             type: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#d33',
             confirmButtonText: 'Reload Page',
-            cancelButtonText: 'Ignore'
+            cancelButtonText: 'Ignore',
           }).then((result) => {
             if (result.value) {
               window.location.reload();
@@ -144,15 +145,13 @@ class QuickDraw extends Component {
           const topTag = result.output.tags ? (result.output.tags[0] || '') : '';
           if (topTag && topTag.value === target && this.mostRecentAward !== target) {
             this.mostRecentAward = target;
-            this.setState({...result.output, successfulInput: input});
             CongratulatorySwal.fire({
               title: <p>CONGRATULATIONS!</p>,
               footer: `Looks like ${article(target)}${target} to me!`,
-              html: <TensorView tensor={input}/>,
+              html: <TensorView tensor={input} />,
               onClose: () => {
                 this.setState(prevState => ({
                   targetIndex: prevState.targetIndex + 1,
-                  successfulInput: null,
                   valueByLabel: {},
                   tags: [],
                 }));
@@ -187,23 +186,24 @@ class QuickDraw extends Component {
             </p>
             <p>
               <a href="https://quickdraw.withgoogle.com/">Google Quick Draw!</a> is an online game
-              where you draw a doodle and their neural network tries to recognize it. Google has
+              where you draw a doodle and their recurrent neural network tries to recognize it. Google has
               collected doodles from 15 million people.
             </p>
             <div className="pic">
-              <div className="bck"/>
+              <div className="bck" />
             </div>
             <p>
-              I downloaded 20 gigabytes of doodles and used them to train my own neural network,
+              I downloaded 20 gigabytes of doodles and used them to train a convolutional neural network,
               on a PC with a budget NVidia RTX 2060 card. After 12 hours of training it agrees with
               Google 73% of the time.
             </p>
             <p>
-              There is no time limit here, so you can explore its weird reactions to changes in
-              the image at your leisure, and get some insights into what it's looking for.
+              There is no timer here (because frankly it's not that good). In theory all the objects
+              are drawable but I can't figure out half of them. But you can spend time exploring its weird
+              reactions to changes in the image, and get some insights into what it's looking for.
             </p>
             <p>
-              This project can be used with other convolutional neural networks, if you have one you'd like to try.
+              This project can be used with other convolutional neural networks, if you have one you want to try.
               See the <a target="blank" href="http://github.com/jtiscione/doodlecritic">repository</a> for details.
             </p>
           </article>
@@ -217,7 +217,7 @@ class QuickDraw extends Component {
           resetPaintData={this.resetPaintData}
           onPencilDown={() => { this.pencilDown = true; }}
           onPencilUp={() => { this.pencilDown = false; }}
-          onNext={ this.onNext }
+          onNext={this.onNext}
         />
         <div className="feedback">
           <div className="cloud-box">

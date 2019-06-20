@@ -178,7 +178,7 @@ class DoodleCanvas extends Component {
           onMouseMove={this.onMouseMove}
           onTouchStart={this.onTouchStart}
           onTouchMove={this.onTouchMove}
-          onTouchUp={this.onMouseUp}
+          onTouchEnd={this.onMouseUp}
         />
         <div className="toolbar">
           <button type="button" className="button" onClick={this.onDrawMode}>DRAW</button>
