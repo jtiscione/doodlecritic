@@ -13,7 +13,7 @@ class DoodleCanvas extends Component {
 
   eraseMode = false;
 
-  prevPos = { offsetX: 0, offsetY: 0 };
+  prevPos = null;
 
   constructor(props) {
     super(props);
@@ -63,13 +63,15 @@ class DoodleCanvas extends Component {
     event.preventDefault();
     this.pencilDown = true;
     this.props.onPencilDown();
-    event.targetTouches.forEach((touch, i) => {
+    const len = event.targetTouches.length;
+    for (let i = 0; i < len; i++) {
+      const touch = event.targetTouches.item(i);
       const { offsetX, offsetY } = this.mousePosition(touch);
       if (i === 0) {
         this.prevPos = { offsetX, offsetY };
       }
       this.paint(this.prevPos, { offsetX, offsetY });
-    });
+    }
   }
 
   onMouseMove(event) {
@@ -84,10 +86,12 @@ class DoodleCanvas extends Component {
   onTouchMove(event) {
     event.preventDefault();
     if (this.pencilDown) {
-      event.targetTouches.forEach((touch) => {
+      const len = event.targetTouches.length;
+      for (let i = 0; i < len; i++) {
+        const touch = event.targetTouches.item(i);
         const { offsetX, offsetY } = this.mousePosition(touch);
         this.paint(this.prevPos, { offsetX, offsetY });
-      });
+      }
     }
   }
 
@@ -116,6 +120,7 @@ class DoodleCanvas extends Component {
       this.pencilDown = false;
       this.props.onPencilUp();
       this.props.sendPaintData(this.canvasRef.current);
+      this.prevPos = null;
     }
   }
 
