@@ -69,7 +69,7 @@ html, body {
         border-bottom: 2px solid orange;
         @media (min-width: $breakpoint) {
           border-bottom: none;
-          max-width: 400px;
+          max-width: 360px;
           overflow-y: visible;
           height: auto;
           padding-right: 5px;
@@ -159,7 +159,7 @@ html, body {
         .cloud-box {
           @media (min-width: $breakpoint) {
             align-self: center;
-            width: 320px;
+            width: 360px;
             height: 200px;
           }
           align-self: center;

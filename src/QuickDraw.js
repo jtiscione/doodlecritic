@@ -186,25 +186,18 @@ class QuickDraw extends Component {
             </p>
             <p>
               <a href="https://quickdraw.withgoogle.com/">Google Quick Draw!</a> is an online game
-              where you draw a doodle and their recurrent neural network tries to recognize it. Google has
+              where you draw a doodle and their neural network tries to recognize it. Google has
               collected doodles from 15 million people.
             </p>
             <div className="pic">
               <div className="bck" />
             </div>
             <p>
-              I downloaded 20 gigabytes of doodles and used them to train a convolutional neural network,
-              on a PC with a budget NVidia RTX 2060 card. After 12 hours of training it agrees with
-              Google 73% of the time.
+              This is my own version. I downloaded 20 GB of doodles and used them to train a small
+              neural network on a PC. After 12 hours of training it agrees with Google 73% of the time.
             </p>
             <p>
-              There is no timer here (because frankly it's not that good). In theory all the objects
-              are drawable but I can't figure out half of them. But you can spend time exploring its weird
-              reactions to changes in the image, and get some insights into what it's looking for.
-            </p>
-            <p>
-              This project can be used with other convolutional neural networks, if you have one you want to try.
-              See the <a target="blank" href="http://github.com/jtiscione/doodlecritic">repository</a> for details.
+              In theory all these objects are drawable, but I haven't figured out half of them myself.
             </p>
           </article>
         </div>
