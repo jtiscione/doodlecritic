@@ -182,7 +182,7 @@ class QuickDraw extends Component {
         <div className="documentation">
           <article>
             <p>
-            Draw something in the canvas, and a neural network will describe what it's seeing!
+              Draw something in the canvas, and a neural network will describe in real time what it's seeing.
             </p>
             <p>
               <a href="https://quickdraw.withgoogle.com/">Google Quick Draw!</a> is an online game
@@ -190,12 +190,13 @@ class QuickDraw extends Component {
               collected doodles from 15 million people.
             </p>
             <p>
-              This is my own version. I downloaded 20 GB of doodles and used them to train a small
+              This is my own version. I downloaded 20 GB of crappy doodles from Google and used them to train a small
               neural network on a PC. After 12 hours of training it agrees with Google 73% of the time.
-              But it doesn't recognize a lot of things it should.
             </p>
             <p>
-              Some of these objects are incredibly difficult to draw- I haven't figured out half of them myself.
+              It doesn't recognize a lot of things it should. Some of these challenges take me several
+              attempts, and I end up skipping over a lot of them. But it spots a lot of things in my doodles
+              before I notice them myself.
             </p>
           </article>
         </div>
