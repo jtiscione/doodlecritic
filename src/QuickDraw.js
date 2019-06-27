@@ -189,15 +189,13 @@ class QuickDraw extends Component {
               where you draw a doodle and their neural network tries to recognize it. Google has
               collected doodles from 15 million people.
             </p>
-            <div className="pic">
-              <div className="bck" />
-            </div>
             <p>
               This is my own version. I downloaded 20 GB of doodles and used them to train a small
               neural network on a PC. After 12 hours of training it agrees with Google 73% of the time.
+              But it doesn't recognize a lot of things it should.
             </p>
             <p>
-              In theory all these objects are drawable, but I haven't figured out half of them myself.
+              Some of these objects are incredibly difficult to draw- I haven't figured out half of them myself.
             </p>
           </article>
         </div>

@@ -62,10 +62,9 @@ html, body {
       }
 
       .documentation {
-        line-height: 1.3em;
-        height: 300px;
-        overflow-y: scroll;
+        line-height: 1.5em;
         margin: auto;
+        font-size: 14pt;
         border-bottom: 2px solid orange;
         @media (min-width: $breakpoint) {
           border-bottom: none;
@@ -86,17 +85,6 @@ html, body {
           background: url(https://quickdraw.withgoogle.com/static/svg/banner.svg) no-repeat 50% 0px;
           height: 150px;
 
-        }
-
-        .pic {
-          background-color: lightgray;
-          width: 300px;
-          margin: auto;
-          .bck {
-            background: url(https://quickdraw.withgoogle.com/static/svg/hero.svg) no-repeat 50% -25px;
-            height: 150px;
-            overflow: hidden;
-          }
         }
       }
 
