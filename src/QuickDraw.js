@@ -213,16 +213,7 @@ class QuickDraw extends Component {
         />
         <div className="feedback">
           <div className="cloud-box">
-            <TagCloud
-              minSize={12}
-              maxSize={35}
-              tags={tags}
-              colorOptions={{
-                luminosity: 'light',
-                hue: 'orange',
-              }}
-              className="simple-cloud"
-            />
+            <TagCloud tags={tags} />
           </div>
           <div className="gauge-box">
             <ReactSpeedometer
