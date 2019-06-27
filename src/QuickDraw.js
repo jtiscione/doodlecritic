@@ -2,13 +2,13 @@
 import React, { Component } from 'react';
 
 import ReactSpeedometer from 'react-d3-speedometer';
-import { TagCloud } from 'react-tagcloud';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 
 import throttle from 'lodash.throttle';
 
 import DoodleCanvas from './DoodleCanvas';
+import TagCloud from './TagCloud';
 import TensorView from './TensorView';
 
 const CongratulatorySwal = withReactContent(Swal);
