@@ -183,7 +183,7 @@ class QuickDraw extends Component {
         <div className="documentation">
           <article>
             <p>
-              Draw something in the canvas, and a neural network will describe in real time what it's seeing.
+              Draw something in the canvas, and a neural network will guess what it is!
             </p>
             <p>
               <a href="https://quickdraw.withgoogle.com/">Google Quick Draw!</a> is an online game
