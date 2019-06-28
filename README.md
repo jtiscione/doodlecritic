@@ -4,6 +4,8 @@
 
 Draw something in the canvas, and a neural network will guess what it is!
 
+See [demo](https://doodlecritic.herokuapp.com) (hopefully still running)
+
 This is a two-part project. It contains a script `train.py` that uses Pytorch to train a convolutional neural network to
 classify doodles. For training data it scans files from Google's [The Quick, Draw! Dataset](https://quickdraw.withgoogle.com/data),
 a data set of 50 million doodles separated into 343 classes. It generates two files: `doodles.onnx` and `labels.txt`.
