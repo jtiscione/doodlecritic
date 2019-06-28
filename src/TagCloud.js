@@ -8,7 +8,7 @@ function TagCloud({tags}) {
   const minSize = 12;
   const maxSize = 35;
 
-  const counts = tags.map(tag => tag.count),
+  const counts = tags.map(tag => Math.round(1000 * tag.value)),
     min = Math.min(...counts),
     max = Math.max(...counts);
 
@@ -18,12 +18,12 @@ function TagCloud({tags}) {
       luminosity: 'light',
       hue: 'orange',
     }),
-    fontSize: minSize + Math.round(((tag.count - min) * (maxSize - minSize)) / (max - min)),
+    fontSize: minSize + Math.round(((Math.round(1000 * tag.value) - min) * (maxSize - minSize)) / (max - min)),
   }));
 
   const tagElements = arrayShuffle(data, { copy: true, rnd: null })
     .map(({tag, fontSize, color}) => {
-      const key = tag.key || tag.value;
+      const key = tag.key || tag.label;
       const style = {
         margin: '0px 3px',
         verticalAlign: 'middle',
@@ -31,7 +31,7 @@ function TagCloud({tags}) {
         color,
         fontSize: `${fontSize}px`,
       };
-      return <span style={style} key={key}>{tag.value}</span>;
+      return <span style={style} key={key}>{tag.label}</span>;
     });
   return <div>{ tagElements }</div>;
 }

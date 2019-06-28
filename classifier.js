@@ -105,7 +105,7 @@ module.exports = {
 
     const sortedLabels = trimmedLabels.sort((e1, e2) => valueByLabel[e2] - valueByLabel[e1]);
     // Return top ten
-    const tags = sortedLabels.slice(0, limit).map((label => ({ value: label, count: Math.round(1000 * valueByLabel[label]) })))
+    const tags = sortedLabels.slice(0, limit).map((label => ({ label, value: valueByLabel[label] })));
 
     // Reassemble valueByLabel but sort the keys in descending value order
     const sortedValueByLabel = sortedLabels.reduce((acc, label) => {
