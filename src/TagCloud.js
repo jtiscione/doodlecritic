@@ -12,9 +12,9 @@ function TagCloud({tags}) {
   const min = Math.min(...values);
   const max = Math.max(...values);
 
-  const data = tags.map(tag => ({
+  const data = tags.map((tag, i) => ({
     tag,
-    color: tag.color || randomColor({
+    color: i === 0 ? 'orange' : randomColor({
       luminosity: 'light',
       hue: 'orange',
     }),

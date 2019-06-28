@@ -145,18 +145,20 @@ class QuickDraw extends Component {
           const topTag = result.output.tags ? (result.output.tags[0] || '') : '';
           if (topTag && topTag.label === target && this.mostRecentAward !== target) {
             this.mostRecentAward = target;
-            CongratulatorySwal.fire({
-              title: <p>CONGRATULATIONS!</p>,
-              footer: `Looks like ${article(target)}${target} to me!`,
-              html: <TensorView tensor={input} />,
-              onClose: () => {
-                this.setState(prevState => ({
-                  targetIndex: prevState.targetIndex + 1,
-                  valueByLabel: {},
-                  tags: [],
-                }));
-              },
-            });
+            setTimeout(() => {
+              CongratulatorySwal.fire({
+                title: <p>CONGRATULATIONS!</p>,
+                footer: `Looks like ${article(target)}${target} to me!`,
+                html: <TensorView tensor={input} />,
+                onClose: () => {
+                  this.setState(prevState => ({
+                    targetIndex: prevState.targetIndex + 1,
+                    valueByLabel: {},
+                    tags: [],
+                  }));
+                },
+              });
+            }, 100);
           }
         }
       }
@@ -186,11 +188,11 @@ class QuickDraw extends Component {
             </p>
             <p>
               <a href="https://quickdraw.withgoogle.com/">Google Quick Draw!</a> is an online game
-              where you draw a doodle and their neural network tries to recognize it. Google has
-              collected doodles from 15 million people.
+              where you draw a doodle and their neural network tries to recognize it. Google has used it to
+              collect doodles from 15 million people.
             </p>
             <p>
-              This is my own version. I downloaded 20 GB of crappy doodles from Google and used them to train a small
+              This is my own version. I downloaded 20 GB of doodles and used them to train a small
               neural network on a PC. After 12 hours of training it agrees with Google 73% of the time.
             </p>
             <p>
