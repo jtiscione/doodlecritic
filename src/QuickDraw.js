@@ -143,7 +143,7 @@ class QuickDraw extends Component {
         } else {
           const target = this.state.shuffledLabels[this.state.targetIndex];
           const topTag = result.output.tags ? (result.output.tags[0] || '') : '';
-          if (topTag && topTag.value === target && this.mostRecentAward !== target) {
+          if (topTag && topTag.label === target && this.mostRecentAward !== target) {
             this.mostRecentAward = target;
             CongratulatorySwal.fire({
               title: <p>CONGRATULATIONS!</p>,
