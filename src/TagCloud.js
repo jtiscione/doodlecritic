@@ -5,12 +5,12 @@ import randomColor from 'randomcolor';
 
 function TagCloud({tags}) {
 
-  const minSize = 12;
+  const minSize = 10;
   const maxSize = 35;
 
-  const counts = tags.map(tag => Math.round(1000 * tag.value)),
-    min = Math.min(...counts),
-    max = Math.max(...counts);
+  const values = tags.map(tag => tag.value);
+  const min = Math.min(...values);
+  const max = Math.max(...values);
 
   const data = tags.map(tag => ({
     tag,
@@ -18,7 +18,7 @@ function TagCloud({tags}) {
       luminosity: 'light',
       hue: 'orange',
     }),
-    fontSize: minSize + Math.round(((Math.round(1000 * tag.value) - min) * (maxSize - minSize)) / (max - min)),
+    fontSize: minSize + Math.round(((tag.value - min) * (maxSize - minSize)) / (max - min)),
   }));
 
   const tagElements = arrayShuffle(data, { copy: true, rnd: null })
