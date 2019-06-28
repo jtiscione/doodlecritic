@@ -1,6 +1,6 @@
 {
-  "name": "DoodleCritic",
-  "version": "0.1.1",
+  "name": "doodle-critic",
+  "version": "0.1.2",
   "private": true,
   "dependencies": {
     "body-parser": "^1.19.0",
