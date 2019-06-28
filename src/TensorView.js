@@ -7,7 +7,6 @@ function TensorView({tensor}) {
   if (tensor) {
     const lines = tensor.match(/.{1,64}/g);
     if (lines && lines.length > 0) {
-      console.dir(lines);
       return <div className="TensorView">
         <div className="lines">
         {

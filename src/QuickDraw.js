@@ -55,7 +55,6 @@ class QuickDraw extends Component {
 
   componentDidMount() {
     if (!this.state.shuffledLabels.length) {
-      console.log('Fetching labels...');
       fetch('/labels', { method: 'GET' }).then((response) => {
         if (response.status !== 200) {
           console.log(`/labels: HTTP status ${response.status}`);
