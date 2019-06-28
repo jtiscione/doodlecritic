@@ -195,8 +195,7 @@ class QuickDraw extends Component {
             </p>
             <p>
               It doesn't recognize a lot of things it should. Some of these challenges take me several
-              attempts, and I end up skipping over a lot of them. But it spots a lot of things in my doodles
-              before I notice them myself.
+              attempts, and I end up skipping over a lot of them. But it often spots things before I notice them myself.
             </p>
           </article>
         </div>

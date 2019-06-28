@@ -62,7 +62,7 @@ html, body {
       }
 
       .documentation {
-        line-height: 1.5em;
+        line-height: 1.2em;
         margin: auto;
         font-size: 14pt;
         border-bottom: 2px solid orange;
@@ -71,14 +71,12 @@ html, body {
           max-width: 360px;
           overflow-y: visible;
           height: auto;
-          padding-right: 5px;
-          margin: 15px;
         }
         text-align: left;
         article {
           text-align: left;
           p {
-            margin: 8px 0px 8px 0px;
+            margin: 15px 0px 15px 0px;
           }
         }
         .banner {
