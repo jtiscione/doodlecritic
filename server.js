@@ -1,3 +1,4 @@
+// Running "npm start" executes this script.
 const fs = require('fs');
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -10,11 +11,6 @@ const haveBuildFolder = fs.existsSync(buildFolderPath);
 
 const app = express();
 
-if (haveBuildFolder) {
-  app.use(express.static(buildFolderPath));
-} else {
-  console.log('Need to start webpack-dev-server ')
-}
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 
@@ -37,16 +33,23 @@ app.get('/readme', async (req, res) => {
 });
 
 if (haveBuildFolder) {
+  // PRODUCTION: serve contents of build folder as static files on port 8000.
+  // Must always run "npm run build" prior to "npm start" on production.
+  app.use(express.static(buildFolderPath));
   app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'build', 'index.html'));
   });
-} else {
+} else if (process.env.NODE_ENV !== 'production') {
+  // DEVELOPMENT: Have webpack-dev-server proxy REST API calls here.
+  console.log('Run "npm run webpack-dev-server" (port 3000).');
+  // Explain that to developers pointing their browsers at localhost:8000
   app.get('/', (req, res) => {
-    res.send(`Listening on port ${process.env.PORT || 8000}.`);
+    res.send(`Not serving HTML on port ${process.env.PORT || 8000}. Run webpack-dev-server on port 3000.`);
   });
 }
 
+// Initialize classifier
 classifier.init();
 
 app.listen(process.env.PORT || 8000);
-console.log('Listening on port 8000');
+console.log('Express server listening on port 8000');
